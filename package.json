@@ -1,0 +1,11 @@
+{
+  "name": "s3_storer",
+  "version": "0.0.0",
+  "description": "A Node application which stores a set of given keys and URLs on S3 and returns the set of keys with new URLs",
+  "main": "app.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
