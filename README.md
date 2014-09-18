@@ -19,14 +19,20 @@ in the JSON response. It will either be "ok", "error", or "timeout".
   "urls": {
     "thumb": "http://www.filepicker.com/api/XXX/convert/thumb",
     "monitor": "http://www.filepicker.com/api/XXX/convert/monitor"
+  },
+  "options": {
+    "minBodyLength": 300
   }
 }
 ```
+* Give key-value pairs of URLs to download, store on S3 and return URLs for.
+* Available options
+  * `minBodyLength` A response body length below this counts as an error.
 
 --------------------------------
 
 ### RESPONSE - success
-* Status is "ok"
+* Status is `ok`
 * All URLs are swapped out for stored URLs.
 
 ```json
@@ -43,8 +49,8 @@ in the JSON response. It will either be "ok", "error", or "timeout".
 
 
 ### RESPONSE - failure from server we GET data from
-* Status is "error"
-* Keys with null was ok, but is cleaned from S3 due to other version failed.
+* Status is `error`
+* Keys with `null` was ok, but is cleaned from S3 due to other version failed.
 * Keys with an object includes information about the response.
 
 ```json
@@ -63,7 +69,7 @@ in the JSON response. It will either be "ok", "error", or "timeout".
 ```
 
 ### RESPONSE - failure timeout
-* Status is "timeout" due to max keep alive time exceeded.
+* Status is `timeout` due to max keep alive time exceeded.
 * Any uploads to S3 we have done will be cleaned.
 
 ```json
@@ -85,7 +91,12 @@ nodemon --exec coffee bin/www
 
 
 ### Tests
-TODO
+Tests are written using [Mocha](http://visionmedia.github.io/mocha/) and
+[Chai expect](http://chaijs.com/guide/styles/#expect) syntax style.
+We use [Sinon](http://sinonjs.org/) for test utilities
+and ..maybe [SuperTest](https://github.com/visionmedia/supertest) for integration tests(?).
+
+Run `grunt test` when you want to run tests.
 
 
 
