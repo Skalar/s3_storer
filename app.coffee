@@ -6,7 +6,7 @@ app = express()
 #
 # Middlewares
 #
-app.use logger(process.env.MORGAN_LOG_FORMAT)
+app.use logger(process.env.MORGAN_LOG_FORMAT) if process.env.MORGAN_LOG_FORMAT
 
 
 #

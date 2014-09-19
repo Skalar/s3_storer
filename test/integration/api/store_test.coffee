@@ -1,3 +1,5 @@
+delete process.env.MORGAN_LOG_FORMAT # Make request log shut up
+
 app = require '../../../app'
 request = require 'supertest'
 _ = require 'lodash'

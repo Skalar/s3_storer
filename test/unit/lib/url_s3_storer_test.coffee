@@ -34,10 +34,11 @@ nockS3Api = ->
   s3Path = sha1 url
   s3Endpoint = "https://#{options.s3Bucket}.s3-#{options.s3Region}.amazonaws.com"
 
-  console.log s3Endpoint
   nock(s3Endpoint)
     .put("/#{s3Path}")
     .reply(200)
+
+
 
 describe "UrlsS3Storer", ->
   beforeEach ->
