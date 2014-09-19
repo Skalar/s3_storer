@@ -1,0 +1,8 @@
+export PORT=8000
+#export DEBUG=s3_storer,keep_alive
+export MORGAN_LOG_FORMAT=dev
+
+export TEST_AWS_ACCESS_KEY_ID=
+export TEST_AWS_SECRET_ACCESS_KEY=
+export TEST_S3_BUCKET=iweb-photo-cache-development
+export TEST_CLOUDFRONT_HOST=d2ykkbppfz0lno.cloudfront.net
