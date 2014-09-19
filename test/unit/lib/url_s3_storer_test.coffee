@@ -1,8 +1,7 @@
 nock = require 'nock'
-sha1 = require 'sha1'
-fs = require 'fs'
-UrlS3Storer = require '../../../lib/url_s3_storer'
+serviceMocks = require '../../helpers/external_service_mocks'
 
+UrlS3Storer = require '../../../lib/url_s3_storer'
 
 
 storer = null
@@ -14,30 +13,6 @@ options =
   awsSecretAccessKey: process.env.TEST_AWS_SECRET_ACCESS_KEY
   s3Bucket: process.env.TEST_S3_BUCKET
   s3Region: process.env.TEST_S3_REGION
-
-
-
-nockFilePickerServer = ->
-  testFilePath = './test/assets/photo.jpg'
-  testFileSize = fs.statSync(testFilePath)['size']
-
-  nock('https://www.filepicker.io')
-    .defaultReplyHeaders(
-      'Content-Type': 'images/jpeg'
-      'Content-Length': testFileSize
-    )
-    .get('/api/file/foo')
-    .reply 200, (uri, requestBody) ->
-      fs.createReadStream testFilePath
-
-nockS3Api = (status = 200) ->
-  s3Path = sha1 url
-  s3Endpoint = "https://#{options.s3Bucket}.s3-#{options.s3Region}.amazonaws.com"
-
-  nock(s3Endpoint)
-    .put("/#{s3Path}")
-    .reply status
-
 
 
 
@@ -54,8 +29,8 @@ describe "UrlsS3Storer", ->
   describe "#store", ->
     describe "success", ->
       beforeEach ->
-        nockFilePickerServer()
-        nockS3Api()
+        serviceMocks.nockFilePickerServer '/api/file/foo'
+        serviceMocks.nockS3Api url, options
 
       it "resolves with S3 url", ->
         expect(storer.store()).to.eventually

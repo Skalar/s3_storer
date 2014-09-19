@@ -1,3 +1,6 @@
+nock = require 'nock'
+serviceMocks = require '../../helpers/external_service_mocks'
+
 UrlsS3Storer = require '../../../lib/urls_s3_storer'
 
 storer = null
