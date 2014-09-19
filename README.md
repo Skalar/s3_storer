@@ -21,13 +21,15 @@ in the JSON response. It will either be "ok", "error", or "timeout".
     "monitor": "http://www.filepicker.com/api/XXX/convert/monitor"
   },
   "options": {
-    "minBodyLength": 300
+    "minBodyLength": 300,
+    "tagLogsWith": "iweb-production asset-123"
   }
 }
 ```
 * Give key-value pairs of URLs to download, store on S3 and return URLs for.
 * Available options
   * `minBodyLength` A response body length below this counts as an error.
+  * `tagLogsWith` A string you want tag all logs related to this request with.
 
 --------------------------------
 
