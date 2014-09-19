@@ -1,4 +1,5 @@
 RSVP = require 'rsvp'
+UrlS3Storer = require './url_s3_storer'
 
 class UrlsS3Storer
   constructor: (@urls, @options) ->
@@ -7,7 +8,7 @@ class UrlsS3Storer
     new RSVP.Promise (resolve, reject) ->
       resolve
         urls:
-          thumb: 'url'
+          thumb: 'foo'
 
 
 

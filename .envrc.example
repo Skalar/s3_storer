@@ -1,5 +1,5 @@
 export PORT=8000
-#export DEBUG=s3_storer,keep_alive
+#export DEBUG=s3_storer*,keep_alive
 export MORGAN_LOG_FORMAT=dev
 
 export TEST_AWS_ACCESS_KEY_ID=

@@ -1,2 +1,5 @@
 GLOBAL.sinon = require 'sinon'
-GLOBAL.expect = require('chai').expect
+
+GLOBAL.chai = require 'chai'
+GLOBAL.expect = chai.expect
+chai.use require('chai-as-promised')
