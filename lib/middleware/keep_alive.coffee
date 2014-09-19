@@ -1,4 +1,4 @@
-debug = require('debug')('keep_alive')
+debug = require('debug')('s3_storer:keep_alive')
 
 setupKeepAlive = (res, waitSeconds, maxIterations) ->
   debug "Setting up keep alive.."
