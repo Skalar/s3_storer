@@ -3,7 +3,7 @@
 Node app for receiving a set of keys and URLs, store the URL on S3 and
 return the set of keys with S3 (or could front) URLs.
 
-
+[ ![Codeship Status for inviso-org/s3_storer](https://www.codeship.io/projects/650e6580-2260-0132-8503-364bcc8fbc9d/status)](https://www.codeship.io/projects/36519)
 
 
 # API Usage
