@@ -38,12 +38,12 @@ describe "UrlsS3Storer", ->
         monitor: "http://#{options.s3Bucket}.s3-#{options.s3Region}.amazonaws.com/7b0e739fa4547913899bebc9d16abe11b538cbe2"
 
 
-    # it "returns the cached url with CloudFront when configured", ->
-    #   storer.options.cloudfrontHost = process.env.TEST_CLOUDFRONT_HOST
-    #
-    #   expect(storer.store()).to.eventually.have.deep.eq
-    #     urls:
-    #       thumb: 'foo'
+    it "returns the cached url with CloudFront when configured", ->
+      storer.options.cloudfrontHost = 'd2ykkbppfz0lno.cloudfront.net'
+
+      expect(storer.store()).to.eventually.have.deep.eq
+        thumb: "http://#{storer.options.cloudfrontHost}/c0d0e5b6d2dc601831a6d51adfc034f87c351c4b"
+        monitor: "http://#{storer.options.cloudfrontHost}/7b0e739fa4547913899bebc9d16abe11b538cbe2"
 
 
   # describe "failures"
