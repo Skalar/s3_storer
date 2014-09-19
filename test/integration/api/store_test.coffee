@@ -93,3 +93,18 @@ describe "POST /store", ->
 
           expect(error.msg).to.eq('Invalid value')
           done()
+
+
+    it "responds with 422 when aws region is missing", (done) ->
+      json = validRequestJson
+      delete json.options.s3Region
+
+      request(app).
+        post('/store').
+        send(json).
+        expect(422).
+        end (err, res) ->
+          error = _.find res.body.errors, (error) -> error.param is 'options.s3Region'
+
+          expect(error.msg).to.eq('Invalid value')
+          done()

@@ -28,6 +28,7 @@ router.post '/', (req, res) ->
   req.checkBody(['options', 'awsAccessKeyId']).notEmpty()
   req.checkBody(['options', 'awsSecretAccessKey']).notEmpty()
   req.checkBody(['options', 's3Bucket']).notEmpty()
+  req.checkBody(['options', 's3Region']).notEmpty()
   req.checkBody(['options', 'cloudfrontHost']).optional().isURL()
 
   errors = req.validationErrors()
