@@ -113,7 +113,7 @@ nodemon --exec coffee bin/www
 Tests are written using [Mocha](http://visionmedia.github.io/mocha/) and
 [Chai expect](http://chaijs.com/guide/styles/#expect) syntax style.
 We use [Sinon](http://sinonjs.org/) for test utilities
-and SuperTest](https://github.com/visionmedia/supertest) for integration tests.
+and [SuperTest](https://github.com/visionmedia/supertest) for integration tests.
 
 Run `grunt test` when you want to run tests.
 You can also run `mocha path/to/test` if you want to run specific tests.
