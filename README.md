@@ -21,7 +21,6 @@ in the JSON response. It will either be "ok", "error", or "timeout".
     "monitor": "http://www.filepicker.com/api/XXX/convert/monitor"
   },
   "options": {
-    "minBodyLength": 300,
     "tagLogsWith": "iweb-production asset-123"
   }
 }
@@ -70,6 +69,24 @@ in the JSON response. It will either be "ok", "error", or "timeout".
 }
 ```
 
+### RESPONSE - failure from S3
+* Status is `error`
+* Keys with `null` was ok, but is cleaned from S3 due to other version failed.
+* Keys with an object includes information about the s3 error.
+
+```json
+{
+  "status": "error",
+  "urls": {
+    "thumb": null,
+    "monitor": {
+      "s3": "Some message from s3 when we tried to upload this file"
+    }
+  }
+}
+```
+
+
 ### RESPONSE - failure timeout
 * Status is `timeout` due to max keep alive time exceeded.
 * Any uploads to S3 we have done will be cleaned.
@@ -96,11 +113,14 @@ nodemon --exec coffee bin/www
 Tests are written using [Mocha](http://visionmedia.github.io/mocha/) and
 [Chai expect](http://chaijs.com/guide/styles/#expect) syntax style.
 We use [Sinon](http://sinonjs.org/) for test utilities
-and ..maybe [SuperTest](https://github.com/visionmedia/supertest) for integration tests(?).
+and SuperTest](https://github.com/visionmedia/supertest) for integration tests.
 
 Run `grunt test` when you want to run tests.
+You can also run `mocha path/to/test` if you want to run specific tests.
 
-
+In our tests some ENV variables are important. They all start with `TEST_*`
+and you find examples in ``.envrc.example`. You must fill in a bucket and
+AWS credentials to make integration test pass.
 
 
 # Deployment
