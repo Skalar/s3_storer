@@ -1,6 +1,7 @@
 express = require 'express'
 router = express.Router()
 keepAlive = require '../lib/middleware/keep_alive'
+UrlS3Storer = require '../lib/urls_s3_storer'
 expressValidator = require 'express-validator'
 bodyParser = require 'body-parser'
 _ = require 'lodash'
@@ -36,12 +37,16 @@ router.post '/', (req, res) ->
       status: 'error'
       errors: errors
   else
-    # TODO magic in stead of this
-    out =
-      urls:
-        thumb: 'url'
-
-    res.end JSON.stringify out
+    storer = new UrlS3Storer req.body.urls, req.body.options
+    storer.store()
+      .then (urls) ->
+        res.end JSON.stringify
+          status: 'ok'
+          urls: urls
+      .catch (urlsWithError) ->
+        res.end JSON.stringify
+          status: 'error'
+          urlsWithError: urlsWithError
 
 
 module.exports = router
