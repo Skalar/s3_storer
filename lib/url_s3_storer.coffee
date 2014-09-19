@@ -8,7 +8,7 @@ RSVP = require 'rsvp'
 class UrlS3Storer
   constructor: (@url, @options) ->
 
-  # Public: Runs store function, returns a promise.
+  # Public: Download url and stores on S3.
   #
   # Resolves with the URL to S3, or cloud front url if cloud front given in options
   #
