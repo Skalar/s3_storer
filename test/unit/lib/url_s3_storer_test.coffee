@@ -30,19 +30,26 @@ nockFilePickerServer = ->
     .reply 200, (uri, requestBody) ->
       fs.createReadStream testFilePath
 
-nockS3Api = ->
+nockS3Api = (status = 200) ->
   s3Path = sha1 url
   s3Endpoint = "https://#{options.s3Bucket}.s3-#{options.s3Region}.amazonaws.com"
 
   nock(s3Endpoint)
     .put("/#{s3Path}")
-    .reply(200)
+    .reply status
+
+
 
 
 
 describe "UrlsS3Storer", ->
   beforeEach ->
+    nock.disableNetConnect()
     storer = new UrlS3Storer url, options
+
+  afterEach ->
+    nock.enableNetConnect()
+
 
   describe "#store", ->
     describe "success", ->
@@ -59,13 +66,13 @@ describe "UrlsS3Storer", ->
       it "fails with 404", ->
         nock('https://www.filepicker.io').get('/api/file/foo').reply 404, "Not found"
         expect(storer.store()).to.be.rejected.eventually.have.deep.eq
-          response:
+          downloadResponse:
             status: 404
             body: "Not found"
 
       it "fails with 502", ->
         nock('https://www.filepicker.io').get('/api/file/foo').reply 502, "Bad Gateway"
         expect(storer.store()).to.be.rejected.eventually.have.deep.eq
-          response:
+          downloadResponse:
             status: 502
             body: "Bad Gateway"

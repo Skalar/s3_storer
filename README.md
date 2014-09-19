@@ -61,7 +61,7 @@ in the JSON response. It will either be "ok", "error", or "timeout".
   "urls": {
     "thumb": null,
     "monitor": {
-      "response": {
+      "downloadResponse": {
         "status": 502,
         "body": "Bad Gateway"
       }
