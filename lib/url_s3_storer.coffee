@@ -1,6 +1,6 @@
 debug = require('debug')('s3_storer:url_s3_storer')
 sha1 = require 'sha1'
-knox = require 'knox'
+AWS = require 'aws-sdk'
 http = require 'http'
 https = require 'https'
 RSVP = require 'rsvp'
@@ -27,47 +27,49 @@ class UrlS3Storer
 
 
   bucketKey: -> sha1 @url
-  bucketPath: -> "/#{@bucketKey()}"
+  s3Url: -> "https://#{@options.s3Bucket}.s3-#{@options.s3Region}.amazonaws.com/#{@bucketKey()}"
 
-  s3: ->
-    knox.createClient
-      key: @options.awsAccessKeyId
-      secret: @options.awsSecretAccessKey
-      bucket: @options.s3Bucket
+  s3Client: ->
+    new AWS.S3
+      accessKeyId: @options.awsAccessKeyId
+      secretAccessKey: @options.awsSecretAccessKey
       region: @options.s3Region
 
-  httpClient: -> if @url.match(/^https/) then https else http
   isHttpStatusOk: (code) -> code >= 200 && code < 300
+  httpClient: ->if @url.match(/^https/) then https else http
 
 
 
 
-  uploadToS3: (getUrlStream, resolve, reject) ->
-    headersToS3 =
-      'Content-Length': getUrlStream.headers['content-length']
-      'Content-Type': getUrlStream.headers['content-type']
-      'x-amz-acl': 'public-read'
+  uploadToS3: (streamToUpload, resolve, reject) ->
+    params =
+      Bucket: @options.s3Bucket
+      Key: @bucketKey()
+      Body: streamToUpload
+      ACL: 'public-read'
+      ContentLength: streamToUpload.headers['content-length']
+      ContentType: streamToUpload.headers['content-type']
 
+    debug "--> Uploading to S3 #{@options.s3Bucket} #{@bucketKey()}"
 
-    debug "--> Streaming to S3 #{@options.s3Bucket} #{@bucketPath()}"
-    @s3().putStream getUrlStream, @bucketPath(), headersToS3, (err, s3StoreRes) ->
-      debug "---> Done #{s3StoreRes.req.url}"
-
+    @s3Client().putObject params, (err, data) =>
       if err
+        debug "---> Failed bucket upload #{err}."
         reject s3: err
       else
-        resolve s3StoreRes.req.url
+        debug "---> Done #{@options.s3Bucket} #{@bucketKey()}"
+        resolve @s3Url()
 
-  bufferResponseAndFail: (getUrlStream, resolve, reject) ->
+  bufferResponseAndFail: (failedStream, resolve, reject) ->
     body = ""
 
-    getUrlStream.on 'data', (chunk) -> body += chunk
-    getUrlStream.on 'end', ->
-      debug "--> Failed #{getUrlStream.statusCode} #{body}"
+    failedStream.on 'data', (chunk) -> body += chunk
+    failedStream.on 'end', ->
+      debug "--> Failed #{failedStream.statusCode} #{body}"
 
       reject
         downloadResponse:
-          status: getUrlStream.statusCode
+          status: failedStream.statusCode
           body: body
 
 
