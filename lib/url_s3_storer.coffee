@@ -1,6 +1,6 @@
 debug = require('debug')('s3_storer:url_s3_storer')
 sha1 = require 'sha1'
-AWS = require 'aws-sdk'
+S3Client = require './s3_client'
 http = require 'http'
 https = require 'https'
 RSVP = require 'rsvp'
@@ -31,12 +31,7 @@ class UrlS3Storer
   cloudfrontUrl: -> "http://#{@options.cloudfrontHost}/#{@bucketKey()}"
   uploadedUrl: -> if @options.cloudfrontHost then @cloudfrontUrl() else @s3Url()
 
-  s3Client: ->
-    new AWS.S3
-      accessKeyId: @options.awsAccessKeyId
-      secretAccessKey: @options.awsSecretAccessKey
-      region: @options.s3Region
-
+  s3Client: -> new S3Client @options
   isHttpStatusOk: (code) -> code >= 200 && code < 300
   httpClient: ->if @url.match(/^https/) then https else http
 
@@ -54,13 +49,14 @@ class UrlS3Storer
 
     debug "--> Uploading to S3 #{@options.s3Bucket} #{@bucketKey()}"
 
-    @s3Client().putObject params, (err, data) =>
-      if err
-        debug "---> Failed bucket upload #{err}."
-        reject s3: err
-      else
+    @s3Client().putObject(params)
+      .then (data) =>
         debug "---> Done #{@options.s3Bucket} #{@bucketKey()}"
         resolve @uploadedUrl()
+      .catch (err) ->
+        debug "---> Failed bucket upload #{err}."
+        reject s3: err
+
 
   bufferResponseAndFail: (failedStream, resolve, reject) ->
     body = ""

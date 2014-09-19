@@ -17,7 +17,7 @@ options =
 
 
 
-describe "UrlsS3Storer", ->
+describe "UrlS3Storer", ->
   beforeEach ->
     nock.disableNetConnect()
     storer = new UrlS3Storer url, options
