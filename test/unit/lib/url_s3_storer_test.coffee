@@ -59,7 +59,13 @@ describe "UrlsS3Storer", ->
 
       it "resolves with S3 url", ->
         expect(storer.store()).to.eventually
-          .eq "https://thorbjorn-tester.s3-eu-west-1.amazonaws.com/5ca5a84a607b14adeefef75617ba8d8585d12573"
+          .eq "http://thorbjorn-tester.s3-eu-west-1.amazonaws.com/5ca5a84a607b14adeefef75617ba8d8585d12573"
+
+      it "resolves with cloud front url when configured", ->
+        storer.options.cloudfrontHost = 'd2ykkbppfz0lno.cloudfront.net'
+
+        expect(storer.store()).to.eventually
+          .eq "http://d2ykkbppfz0lno.cloudfront.net/5ca5a84a607b14adeefef75617ba8d8585d12573"
 
 
     describe "failure", ->

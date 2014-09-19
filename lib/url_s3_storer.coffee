@@ -27,7 +27,9 @@ class UrlS3Storer
 
 
   bucketKey: -> sha1 @url
-  s3Url: -> "https://#{@options.s3Bucket}.s3-#{@options.s3Region}.amazonaws.com/#{@bucketKey()}"
+  s3Url: -> "http://#{@options.s3Bucket}.s3-#{@options.s3Region}.amazonaws.com/#{@bucketKey()}"
+  cloudfrontUrl: -> "http://#{@options.cloudfrontHost}/#{@bucketKey()}"
+  uploadedUrl: -> if @options.cloudfrontHost then @cloudfrontUrl() else @s3Url()
 
   s3Client: ->
     new AWS.S3
@@ -58,7 +60,7 @@ class UrlS3Storer
         reject s3: err
       else
         debug "---> Done #{@options.s3Bucket} #{@bucketKey()}"
-        resolve @s3Url()
+        resolve @uploadedUrl()
 
   bufferResponseAndFail: (failedStream, resolve, reject) ->
     body = ""
