@@ -75,6 +75,10 @@ class S3Client
     unless Array.isArray urls
       return RSVP.reject new Error "URLs must be an array"
 
+    if urls.length is 0
+      return RSVP.resolve()
+
+
     objectsToDelete = _.map urls, (url) ->
       parsed = urlParser.parse url
       pathWithoutFirstForwardSlash =

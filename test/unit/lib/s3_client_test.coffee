@@ -64,6 +64,11 @@ describe "S3Client", ->
 
 
   describe "#deleteUrls", ->
+    it "resolves if array is empty", ->
+      urls = []
+      expect(client.deleteUrls(urls, 'test')).to.eventually.eq 'deleteObjects success'
+      expect(client.aws.deleteObjectsParams).to.eq null # Ensure aws wasn't invoked
+
     it "forwards the set of urls and bucket to deleteObjects", ->
       urls = ['http://ex.com/foo', 'http://ex.com/bar']
 
