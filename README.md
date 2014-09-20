@@ -13,10 +13,12 @@ return the set of keys with S3 (or could front) URLs.
 
 # API Usage
 
-API will always return 200 OK, but errors may occur. Reason for this is that we'll
+API will return 200 OK, but errors may occur during requests. The reason for this is that we'll
 start sending data to client right away, to keep connection open and stop Heroku from killing us.
 We will know at a later point in time if some URLs fails or not and the status is serialized
 in the JSON response. It will either be "ok", "error", or "timeout".
+
+API request sanity validations will return 422 as they happen at the very beginning of each request.
 
 A request to the API should behave in a transactional manner, meaning that either all
 given URLs are successfully uploaded, or non will be stored on S3. We will try and clean
