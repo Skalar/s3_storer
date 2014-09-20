@@ -10,6 +10,8 @@ module.exports = (req, res, next) ->
     if credentials and credentials.name is user and credentials.pass is pass
       next()
     else
-      res.sendStatus 401
+      res
+        .set('WWW-Authenticate': 'Basic realm="app"')
+        .sendStatus 401
   else
     next()
