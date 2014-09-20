@@ -143,8 +143,8 @@ Run `grunt test` when you want to run tests.
 You can also run `mocha path/to/test` if you want to run specific tests.
 
 In our tests some ENV variables are important. They all start with `TEST_*`
-and you find examples in ``.envrc.example`. We have created a inviso-integration-test
-bucket and a user on AWS which only has access to this bucket.
+and you find examples in `.envrc.example`. You need to create and configure your own bucket
+for integration testing.
 
 
 # Deployment
