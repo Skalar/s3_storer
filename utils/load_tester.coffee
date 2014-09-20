@@ -6,6 +6,7 @@ https = require 'https'
 urlParser = require 'url'
 concat = require 'concat-stream'
 _ = require 'lodash'
+S3Client = require '../lib/s3_client'
 
 # Internal: LoadTester used to .. well, test load against the API
 #
@@ -77,8 +78,15 @@ class LoadTester
     new RSVP.Promise (resolve, reject) =>
       requestPromises = _.map @source.requests, (request) => @get request
       debug "Running #{requestPromises.length} request(s)."
+      t1 = new Date
+
       RSVP.all(requestPromises)
         .then (responses) =>
+          t2 = new Date
+          duration = (t2-t1)/1000
+          avg = duration / requestPromises.length
+          debug "Completed #{requestPromises.length} requests in #{duration}s. Avg: #{avg}"
+
           @responses = responses
           resolve responses
         .catch reject
@@ -86,16 +94,15 @@ class LoadTester
 
   downloadUploadedFilesTo: (path) ->
     debug "Download files to #{path}"
-    debug @responses
 
     new RSVP.Promise (resolve, reject) ->
-      setTimeout resolve, 500
+      resolve()
 
   deleteUploadedFilesFromS3: ->
     debug "Delete files from S3"
+    urls = _.flatten _.map @responses, (response) -> _.values response.urls
 
-    new RSVP.Promise (resolve, reject) ->
-      setTimeout resolve, 100
+    @s3Client().deleteUrls urls, @source.options.s3Bucket
 
 
 
@@ -104,7 +111,8 @@ class LoadTester
   get: (request) ->
     new RSVP.Promise (resolve, reject) =>
       @apiRequest(request)
-        .then (responseBody) -> resolve(responseBody)
+        .then (responseBody) ->
+          resolve JSON.parse responseBody
         .catch reject
 
 
@@ -143,9 +151,19 @@ class LoadTester
 
 
   httpClient: ->
-    return @client if @client?
+    return @_httpClient if @_httpClient?
     url = @source.api.url
-    @client = if url.match(/^https/) then https else http
+    @_httpClient = if url.match(/^https/) then https else http
+
+  s3Client: ->
+    return @_s3Client if @_s3Client?
+
+    @_s3Client = new S3Client
+      awsAccessKeyId: @source.options.awsAccessKeyId
+      awsSecretAccessKey: @source.options.awsSecretAccessKey
+      region: @source.options.s3Region
+
+
 
 
 
