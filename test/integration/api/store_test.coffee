@@ -1,5 +1,6 @@
 delete process.env.MORGAN_LOG_FORMAT # Make request log shut up
 
+awsOptions = require('../../helpers/aws_options')()
 app = require '../../../app'
 request = require 'supertest'
 _ = require 'lodash'
@@ -14,12 +15,7 @@ describe "POST /store", ->
     validRequestJson =
       urls:
         thumb: 'https://www.filepicker.io/api/file/JhJKMtnRDW9uLYcnkRKW/convert?crop=41,84,220,220'
-      options:
-        awsAccessKeyId: process.env.TEST_AWS_ACCESS_KEY_ID
-        awsSecretAccessKey: process.env.TEST_AWS_SECRET_ACCESS_KEY
-        s3Bucket: process.env.TEST_S3_BUCKET
-        s3Region: process.env.TEST_S3_REGION
-        cloudfrontHost: process.env.TEST_CLOUDFRONT_HOST
+      options: awsOptions
 
 
 
