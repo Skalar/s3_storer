@@ -1,39 +1,70 @@
 require('../../spec_helper')()
 
 nock = require 'nock'
-awsOptions = require('../../helpers/aws_options')()
+awsOptions = require('../../helpers/aws_options')
 app = require '../../../app'
+S3Client = require '../../../lib/s3_client'
 request = require 'supertest'
 _ = require 'lodash'
 
 
 
 validRequestJson = null
-
+s3Client = new S3Client awsOptions()
 
 describe "POST /store", ->
   beforeEach ->
     validRequestJson =
       urls:
         thumb: 'https://www.filepicker.io/api/file/JhJKMtnRDW9uLYcnkRKW/convert?crop=41,84,220,220'
-      options: awsOptions
+        monitor: 'https://www.filepicker.io/api/file/JhJKMtnRDW9uLYcnkRKW/convert?crop=0,0,400,400'
+      options: awsOptions()
 
     nock.enableNetConnect()
 
 
-
   describe "valid requests", ->
-    @timeout 60000
+    @timeout 10000
 
     afterEach ->
-      console.log "REMEMBER TO REMOVE FILES FROM S3!!"
+      s3Client.deleteUrls(
+        [
+          'http://inviso-integration-test.s3-eu-west-1.amazonaws.com/6bb610a613f6ea25e695f7df7d13640be642553c'
+          'http://inviso-integration-test.s3-eu-west-1.amazonaws.com/b981b9d5369fc4dd5f71063fb8c0a378c65afd13'
+        ]
+        awsOptions().s3Bucket
+      ).catch (err) -> console.log "FAILED to clean after integration tests! Error: #{err}"
 
-    it "responds with 200 ok and a URL to cloud front host given", (done) ->
+    it "responds with 200 OK and a URL s3 for given files", (done) ->
       request(app).
         post('/store').
         send(validRequestJson).
         expect(200).
         end (err, res) ->
+          response = JSON.parse res.text
+
+          expect(response.status).to.eq 'ok'
+          expect(response.urls).to.deep.eq
+            thumb: 'http://inviso-integration-test.s3-eu-west-1.amazonaws.com/6bb610a613f6ea25e695f7df7d13640be642553c'
+            monitor: 'http://inviso-integration-test.s3-eu-west-1.amazonaws.com/b981b9d5369fc4dd5f71063fb8c0a378c65afd13'
+
+          done()
+
+    it "responds with 200 OK and a URL cloud front host when given", (done) ->
+      validRequestJson.options.cloudfrontHost = 'xxx.cloudfront.net'
+
+      request(app).
+        post('/store').
+        send(validRequestJson).
+        expect(200).
+        end (err, res) ->
+          response = JSON.parse res.text
+
+          expect(response.status).to.eq 'ok'
+          expect(response.urls).to.deep.eq
+            thumb: 'http://xxx.cloudfront.net/6bb610a613f6ea25e695f7df7d13640be642553c'
+            monitor: 'http://xxx.cloudfront.net/b981b9d5369fc4dd5f71063fb8c0a378c65afd13'
+
           done()
 
   describe "invalid requests", ->
