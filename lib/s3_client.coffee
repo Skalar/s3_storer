@@ -6,7 +6,7 @@ urlParser = require 'url'
 
 # Exposes a S3 Client which is promise based
 class S3Client
-  constructor: (@options, @aws) ->
+  constructor: (@options, @aws = null) ->
     @aws ?= new AWS.S3
       accessKeyId: @options.awsAccessKeyId
       secretAccessKey: @options.awsSecretAccessKey
