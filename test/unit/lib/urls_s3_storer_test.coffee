@@ -1,3 +1,5 @@
+require('../../spec_helper')()
+
 nock = require 'nock'
 UrlsS3Storer = require '../../../lib/urls_s3_storer'
 serviceMocks = require '../../helpers/external_service_mocks'
@@ -12,12 +14,7 @@ urls =
 
 describe "UrlsS3Storer", ->
   beforeEach ->
-    nock.disableNetConnect()
     storer = new UrlsS3Storer urls, awsOptions
-
-  afterEach ->
-    nock.enableNetConnect()
-
 
   describe "success", ->
     beforeEach ->

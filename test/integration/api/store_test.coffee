@@ -1,5 +1,6 @@
-delete process.env.MORGAN_LOG_FORMAT # Make request log shut up
+require('../../spec_helper')()
 
+nock = require 'nock'
 awsOptions = require('../../helpers/aws_options')()
 app = require '../../../app'
 request = require 'supertest'
@@ -16,6 +17,8 @@ describe "POST /store", ->
       urls:
         thumb: 'https://www.filepicker.io/api/file/JhJKMtnRDW9uLYcnkRKW/convert?crop=41,84,220,220'
       options: awsOptions
+
+    nock.enableNetConnect()
 
 
 

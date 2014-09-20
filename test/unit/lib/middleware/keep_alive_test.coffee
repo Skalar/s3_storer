@@ -1,3 +1,5 @@
+require('../../../spec_helper')()
+
 keepAlive = require '../../../../lib/middleware/keep_alive'
 
 next = ->

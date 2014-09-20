@@ -1,7 +1,10 @@
+require('../../spec_helper')()
+
 nock = require 'nock'
 UrlS3Storer = require '../../../lib/url_s3_storer'
 serviceMocks = require '../../helpers/external_service_mocks'
 awsOptions = require('../../helpers/aws_options')()
+
 
 storer = null
 filepickerServer = null
@@ -10,12 +13,7 @@ url = 'https://www.filepicker.io/api/file/foo'
 
 describe "UrlS3Storer", ->
   beforeEach ->
-    nock.disableNetConnect()
     storer = new UrlS3Storer url, awsOptions
-
-  afterEach ->
-    nock.enableNetConnect()
-
 
   describe "#store", ->
     describe "success", ->
