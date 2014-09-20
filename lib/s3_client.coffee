@@ -7,6 +7,12 @@ urlParser = require 'url'
 # Exposes a S3 Client which is promise based
 class S3Client
   constructor: (@options, @aws = null) ->
+    # If you send many urls in to deletion
+    # we may end up building a params object to
+    # deleteObjects which does not pass XML verification.
+    # Batch delete requests in batches of...
+    @batchSizeDeleteUrl = 250
+
     @aws ?= new AWS.S3
       accessKeyId: @options.awsAccessKeyId
       secretAccessKey: @options.awsSecretAccessKey
@@ -78,19 +84,31 @@ class S3Client
     if urls.length is 0
       return RSVP.resolve()
 
+    new RSVP.Promise (resolve, reject) =>
+      batches = @batchForDeletion urls
 
-    objectsToDelete = _.map urls, (url) ->
-      parsed = urlParser.parse url
-      pathWithoutFirstForwardSlash =
-        parsed.pathname.substring(1, parsed.pathname.length)
-      Key: pathWithoutFirstForwardSlash
+      batchPromises = _.map batches, (batch) =>
+        objectsToDelete = _.map batch, (url) =>
+          parsed = urlParser.parse url
+          pathWithoutFirstForwardSlash =
+            parsed.pathname.substring(1, parsed.pathname.length)
+          Key: pathWithoutFirstForwardSlash
 
-    params =
-      Bucket: bucket
-      Delete:
-        Objects: objectsToDelete
+        params =
+          Bucket: bucket
+          Delete:
+            Objects: objectsToDelete
 
-    @deleteObjects params
+        @deleteObjects params
 
+      RSVP.all(batchPromises)
+        .then(resolve)
+        .catch(reject)
+
+
+
+  batchForDeletion: (array) ->
+    groups = _.groupBy array, (value, index) => Math.floor index / @batchSizeDeleteUrl
+    _.values groups
 
 module.exports = S3Client

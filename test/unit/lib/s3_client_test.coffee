@@ -81,6 +81,20 @@ describe "S3Client", ->
             {Key: 'bar'}
           ]
 
+    it "forwards the set of urls and bucket to deleteObjects, and max urls per delete is configurable", ->
+      urls = ['http://ex.com/foo', 'http://ex.com/bar']
+
+      client.batchSizeDeleteUrl = 1
+
+      expect(client.deleteUrls(urls, 'test')).to.eventually.eq 'deleteObjects success'
+      expect(client.aws.deleteObjectsParams).to.deep.eq
+        Bucket: 'test'
+        Delete:
+          Objects: [
+            {Key: 'bar'} # Will be called twice, last will be stored
+          ]
+
+
     it "works with long and nested urls with query params", ->
       urls = ['http://ex.com/foo/bar?hello=true']
 
