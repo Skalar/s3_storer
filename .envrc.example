@@ -1,8 +1,13 @@
-export PORT=8000
 #export DEBUG=s3_storer*,keep_alive
+export PORT=8000
 export MORGAN_LOG_FORMAT=dev
 
-export TEST_AWS_ACCESS_KEY_ID=
-export TEST_AWS_SECRET_ACCESS_KEY=
-export TEST_S3_BUCKET=iweb-photo-cache-development
-export TEST_CLOUDFRONT_HOST=d2ykkbppfz0lno.cloudfront.net
+# The following user has only access to this S3 bucket
+# and is used for a few integration tests. Feel free to
+# use this user, but your code should clean up any files
+# uploaded. Even though user has limited access you should
+# not spread these credentials around.
+export TEST_AWS_ACCESS_KEY_ID=AKIAIK463BB3KB3UMMHA
+export TEST_AWS_SECRET_ACCESS_KEY=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
+export TEST_S3_BUCKET=inviso-integration-test
+export TEST_S3_REGION=eu-west-1
