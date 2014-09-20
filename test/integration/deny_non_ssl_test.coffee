@@ -4,13 +4,16 @@ app = require '../../app'
 request = require 'supertest'
 
 requireSslWas = process.env.REQUIRE_SSL
+behindProxyWas = process.env.BEHIND_PROXY
 
 describe "GET /", ->
   beforeEach ->
     nock.enableNetConnect()
+    process.env.BEHIND_PROXY = 'true'
 
   afterEach ->
     process.env.REQUIRE_SSL = requireSslWas
+    process.env.BEHIND_PROXY = behindProxyWas
 
   describe "not require SSL", ->
     beforeEach ->

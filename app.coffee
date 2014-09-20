@@ -6,7 +6,7 @@ app = express()
 #
 # Configuration
 #
-app.set 'trust proxy', -> true if process.env.BEHIND_PROXY is 'true'
+app.set 'trust proxy', -> process.env.BEHIND_PROXY is 'true'
 
 
 #
