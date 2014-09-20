@@ -1,6 +1,7 @@
 RSVP = require 'rsvp'
 _ = require 'lodash'
 UrlS3Storer = require './url_s3_storer'
+S3Client = require './s3_client'
 
 class UrlsS3Storer
   constructor: (@urls, @options) ->
@@ -43,7 +44,7 @@ class UrlsS3Storer
           if @allResultsFulfilled results
             resolve @mapPromisResultsToUrls(results)
           else
-            reject @cleanSuccessesAndMapToErrors(results)
+            @cleanSuccessesAndMapToErrors(results, reject)
 
         .catch (error) ->
           reject error: error
@@ -61,12 +62,27 @@ class UrlsS3Storer
 
     urls
 
-  cleanSuccessesAndMapToErrors: (results) ->
+  cleanSuccessesAndMapToErrors: (results, reject) ->
     out = {}
+    urlsToDelete = []
 
     for key, result of results
-      out[key] = result.reason
+      if result.state is 'fulfilled'
+        urlsToDelete.push result.value
+        out[key] = null
+      else
+        out[key] = result.reason
 
-    out
+
+    @s3Client().deleteUrls(urlsToDelete, @options.s3Bucket)
+      .then ->
+        reject out
+      .catch (err) ->
+        reject err
+
+
+  s3Client: -> new S3Client @options
+
+
 
 module.exports = UrlsS3Storer

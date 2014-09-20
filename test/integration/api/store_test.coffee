@@ -27,7 +27,6 @@ describe "POST /store", ->
 
 
   describe "valid requests", ->
-
     afterEach ->
       s3Client.deleteUrls(
         [
