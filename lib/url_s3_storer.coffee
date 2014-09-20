@@ -15,7 +15,7 @@ class UrlS3Storer
   #
   # Rejects with either:
   #   downloadResponse: {status: xxx, body: 'xxx'}
-  #   s3: 'Upload to S3 failed'
+  #   s3: 'Upload to S3 failed' | errorObject
   store: ->
     new RSVP.Promise (resolve, reject) =>
       debug "GET #{@url}"
