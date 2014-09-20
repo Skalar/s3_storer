@@ -15,9 +15,11 @@ return the set of keys with S3 (or could front) URLs.
 # API Usage
 
 API will always return 200 OK, but errors may occur. Reason for this is that we'll
-start sending data to client, to keep connection open and stop Heroku from killing us.
+start sending data to client right away, to keep connection open and stop Heroku from killing us.
 We will know at a later point in time if some URLs fails or not and the status is serialized
 in the JSON response. It will either be "ok", "error", or "timeout".
+
+In production all requests must be over https due to AWS credentials being passed around.
 
 ### POST to `/store` (auth header to be added)
 ```json
@@ -27,14 +29,23 @@ in the JSON response. It will either be "ok", "error", or "timeout".
     "monitor": "http://www.filepicker.com/api/XXX/convert/monitor"
   },
   "options": {
-    "tagLogsWith": "iweb-production asset-123"
+    "awsAccessKeyId": "xxx",
+    "awsSecretAccessKey": "xxx",
+    "s3Bucket": "xxx",
+    "s3Region": "xxx",
+    "cloudfrontHost": "xxx", # Optional
+    "tagLogsWith": "iweb-production asset-123" # Optional
   }
 }
 ```
 * Give key-value pairs of URLs to download, store on S3 and return URLs for.
 * Available options
-  * `minBodyLength` A response body length below this counts as an error.
   * `tagLogsWith` A string you want tag all logs related to this request with.
+  * `awsAccessKeyId` AWS access key
+  * `awsSecretAccessKey` AWS access secret
+  * `s3Bucket` AWS bucket you want files uploaded to
+  * `s3Region` AWS region you want files uploaded to
+  * `cloudfrontHost` AWS cloud front, if any.
 
 --------------------------------
 
