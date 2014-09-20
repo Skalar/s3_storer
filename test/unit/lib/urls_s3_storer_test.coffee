@@ -43,7 +43,6 @@ describe "UrlsS3Storer", ->
       nock('https://www.filepicker.io').get('/api/file/monitor').reply 404, "Not found"
       nock('https://inviso-integration-test.s3-eu-west-1.amazonaws.com').post('/?delete').reply 200
       serviceMocks.nockS3Api urls.thumb, awsOptions
-      serviceMocks.nockS3Api urls.monitor, awsOptions
 
     it "responds with error for URL failed, and null for urls which worked", ->
       expect(storer.store()).to.be.rejected.eventually.have.deep.eq
