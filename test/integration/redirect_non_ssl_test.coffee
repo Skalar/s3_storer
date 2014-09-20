@@ -1,4 +1,5 @@
 require('../spec_helper')()
+
 nock = require 'nock'
 app = require '../../app'
 request = require 'supertest'

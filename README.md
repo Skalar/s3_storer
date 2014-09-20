@@ -7,7 +7,6 @@ return the set of keys with S3 (or could front) URLs.
 
 # TODO
 
-* Add auth header to restrict usage to autenticated users.
 * Handle abortion if keep alive times out (clean up like before after request has ended).
 * Do logging, prefix logs with tagLogsWith option.
 
@@ -26,7 +25,8 @@ any uploaded files to S3 if other files fail.
 #### Important - security of the API
 In production all requests **must be sent over https** due to credentials being passed around. Please
 see ENV variables `REQUIRE_SSL` which should be true in production, and `BEHIND_PROXY` if you for instance
-are deploing on Heroku.
+are deploing on Heroku. You should also set `BASIC_AUTH_USER` and `BASIC_AUTH_PASSWORD` to restrict
+access to your API.
 
 ### POST to `/store`
 ```json

@@ -13,6 +13,7 @@ app.set 'trust proxy', -> process.env.BEHIND_PROXY is 'true'
 # Middlewares
 #
 app.use logger process.env.MORGAN_LOG_FORMAT if process.env.MORGAN_LOG_FORMAT
+app.use require './lib/middleware/auth'
 app.use require './lib/middleware/redirect_non_ssl'
 
 

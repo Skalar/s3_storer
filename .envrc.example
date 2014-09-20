@@ -1,8 +1,11 @@
 #export DEBUG=s3_storer*,keep_alive
+#export BEHIND_PROXY=true
+#export REQUIRE_SSL=true
 export PORT=8000
 export MORGAN_LOG_FORMAT=dev
-export BEHIND_PROXY=true
-#export REQUIRE_SSL=true
+
+export BASIC_AUTH_USER=
+export BASIC_AUTH_PASSWORD=
 
 export TEST_AWS_ACCESS_KEY_ID=
 export TEST_AWS_SECRET_ACCESS_KEY=
