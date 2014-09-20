@@ -17,6 +17,11 @@ module.exports = ->
     # done within a beforeEach in your describe block.
     nock.disableNetConnect()
 
+  afterEach ->
+    # Ensure that no unused nocks survives after a test.
+    # Or else, it can get us in to trouble on the next test running.
+    nock.cleanAll()
+
 
 
   ran = true
