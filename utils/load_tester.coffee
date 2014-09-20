@@ -23,12 +23,14 @@ S3Client = require '../lib/s3_client'
 # Example of usage
 # ----------------
 #
-#   loadTester = new LoadTester 'path/to/sourceFile.json'
-#   loadTester.run()
-#     .then(loadTester.downloadUploadedFilesTo('path/you/want'))
-#     .then(loadTester.deleteUploadedFilesFromS3())
-#     .then -> console.log "ALL DONE!"
-#     .catch (err) -> console.log "UPS :( .. GOT ERROR: #{err}"
+#   LoadTester = require '../utils/load_tester'
+#
+#   lt = new LoadTester './tmp/load_tester.json'
+#   lt.run()
+#     .then(-> lt.downloadUploadedFilesTo('./tmp/lt/'))
+#     .then(-> lt.deleteUploadedFilesFromS3())
+#     .then(-> console.log "ALL DONE!")
+#     .catch (err) -> console.log "\nERR --> ", err
 #
 #
 #
@@ -38,7 +40,7 @@ S3Client = require '../lib/s3_client'
 # The source file is expected to be a json file with format like
 # {
 #   "api": {
-#     "url": "https://your-endpoint.herokuapps.com/",
+#     "url": "https://your-endpoint.herokuapps.com/store",
 #     "auth": {
 #       "user": "username",
 #       "pass": "password"
