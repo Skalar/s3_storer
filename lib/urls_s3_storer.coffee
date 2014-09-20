@@ -62,6 +62,11 @@ class UrlsS3Storer
     urls
 
   cleanSuccessesAndMapToErrors: (results) ->
+    out = {}
 
+    for key, result of results
+      out[key] = result.reason
+
+    out
 
 module.exports = UrlsS3Storer

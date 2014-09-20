@@ -13,6 +13,8 @@ validRequestJson = null
 s3Client = new S3Client awsOptions()
 
 describe "POST /store", ->
+  @timeout 10000
+
   beforeEach ->
     validRequestJson =
       urls:
@@ -24,7 +26,6 @@ describe "POST /store", ->
 
 
   describe "valid requests", ->
-    @timeout 10000
 
     afterEach ->
       s3Client.deleteUrls(
@@ -68,6 +69,25 @@ describe "POST /store", ->
           done()
 
   describe "invalid requests", ->
+    it "responds with useful error when AWS credentials are wrong", (done) ->
+      validRequestJson.options.awsSecretAccessKey = 'foobar'
+
+      request(app).
+        post('/store').
+        send(validRequestJson).
+        expect(200).
+        end (err, res) ->
+          response = JSON.parse res.text
+
+          expect(response.status).to.eq 'error'
+          expect(response.urlsWithError).to.have.deep.property 'thumb.s3.code', 'SignatureDoesNotMatch'
+          expect(response.urlsWithError).to.have.deep.property 'thumb.s3.statusCode', 403
+          expect(response.urlsWithError).to.have.deep.property 'monitor.s3.code', 'SignatureDoesNotMatch'
+          expect(response.urlsWithError).to.have.deep.property 'monitor.s3.statusCode', 403
+
+          done()
+
+
     it "responds with 422 when urls are missing", (done) ->
       json = validRequestJson
       delete json.urls
