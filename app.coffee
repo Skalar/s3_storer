@@ -4,6 +4,12 @@ logger = require 'morgan'
 app = express()
 
 #
+# Configuration
+#
+app.set 'trust proxy', -> true if process.env.BEHIND_PROXY is 'true'
+
+
+#
 # Middlewares
 #
 app.use logger process.env.MORGAN_LOG_FORMAT if process.env.MORGAN_LOG_FORMAT

@@ -1,6 +1,8 @@
-export DEBUG=s3_storer*
+#export DEBUG=s3_storer*,keep_alive
 export PORT=8000
 export MORGAN_LOG_FORMAT=dev
+export BEHIND_PROXY=true
+#export REQUIRE_SSL=true
 
 export TEST_AWS_ACCESS_KEY_ID=
 export TEST_AWS_SECRET_ACCESS_KEY=
