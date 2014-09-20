@@ -38,7 +38,7 @@ describe "GET /", ->
           .get('/')
           .set('X-Forwarded-Proto', 'http')
           .end (err, res) ->
-            expect(res.statusCode).to.eq 302
+            expect(res.statusCode).to.eq 301
             expect(res.header['location']).to.eq 'https://127.0.0.1/'
             done()
 
