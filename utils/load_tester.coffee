@@ -67,6 +67,8 @@ S3Client = require '../lib/s3_client'
 class LoadTester
   constructor: (sourceFilePath) ->
     @responses = []
+    @successes = []
+    @failures = []
 
     if fs.existsSync sourceFilePath
       debug "source file loaded"
@@ -85,15 +87,23 @@ class LoadTester
           t2 = new Date
           duration = (t2-t1)/1000
           avg = duration / requestPromises.length
-          debug "Completed #{requestPromises.length} requests in #{duration}s. Avg: #{avg}"
 
-          @responses = responses
+          @responses = _.filter responses, (response) -> _.isObject response
+          @successes = _.filter @responses, {status: 'ok'}
+          @failures  = _.filter @responses, {status: ['timeout', 'error']}
+
+          debug "------------------------------------------------------------------------"
+          debug "Completed #{@responses.length} requests in #{duration}s. Avg: #{avg}"
+          debug "Successes: #{@successes.length}"
+          debug "Failures: #{@failures.length}"
+          debug "------------------------------------------------------------------------"
+
           resolve responses
         .catch reject
 
 
   downloadUploadedFilesTo: (path) ->
-    debug "Download files to #{path}"
+    debug "Download files to #{path} [TODO]"
 
     new RSVP.Promise (resolve, reject) ->
       resolve()
@@ -113,7 +123,8 @@ class LoadTester
       @apiRequest(request)
         .then (responseBody) ->
           resolve JSON.parse responseBody
-        .catch reject
+        .catch (err) ->
+          resolve null
 
 
 
