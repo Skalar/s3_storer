@@ -1,5 +1,6 @@
 debug = require('debug')('s3_storer:url_s3_storer')
 sha1 = require 'sha1'
+concat = require 'concat-stream'
 S3Client = require './s3_client'
 http = require 'http'
 https = require 'https'
@@ -59,17 +60,14 @@ class UrlS3Storer
 
 
   bufferResponseAndFail: (failedStream, resolve, reject) ->
-    body = ""
-
-    failedStream.on 'data', (chunk) -> body += chunk
-    failedStream.on 'end', ->
+    failedStream.pipe concat (buffer) ->
+      body = buffer.toString()
       debug "--> Failed #{failedStream.statusCode} #{body}"
 
       reject
         downloadResponse:
           status: failedStream.statusCode
           body: body
-
 
 
 
