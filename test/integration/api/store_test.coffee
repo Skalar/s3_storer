@@ -2,6 +2,7 @@ require('../../spec_helper')()
 
 nock = require 'nock'
 awsOptions = require('../../helpers/aws_options')
+verifyDataEqual = require('../../helpers/verify_data_equal')
 app = require '../../../app'
 S3Client = require '../../../lib/s3_client'
 request = require 'supertest'
@@ -50,6 +51,23 @@ describe "POST /store", ->
             monitor: 'http://inviso-integration-test.s3-eu-west-1.amazonaws.com/b981b9d5369fc4dd5f71063fb8c0a378c65afd13'
 
           done()
+
+    it "returns URLs where the stored data is what we expect it to be", (done) ->
+      request(app).
+        post('/store').
+        send(validRequestJson).
+        expect(200).
+        end (err, res) ->
+          response = JSON.parse res.text
+
+          expect(verifyDataEqual(
+            validRequestJson.urls.thumb
+            response.urls.thumb
+          )).to.eventually.eq(true).notify ->
+            expect(verifyDataEqual(
+              validRequestJson.urls.monitor
+              response.urls.monitor
+            )).to.eventually.eq(true).notify done
 
     it "responds with 200 OK and a URL cloud front host when given", (done) ->
       validRequestJson.options.cloudfrontHost = 'xxx.cloudfront.net'
