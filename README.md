@@ -7,11 +7,9 @@ return the set of keys with S3 (or could front) URLs.
 
 # TODO
 
-* Enfore SSL flag, for in production
-* Clean up uploaded s3 files if some URLs do not work.
+* Add auth header.
 * Handle abortion if keep alive times out (clean up like before after request has ended).
 * Do logging, prefix logs with tagLogsWith option.
-* Add auth header.
 
 
 # API Usage
