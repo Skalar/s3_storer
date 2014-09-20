@@ -10,6 +10,8 @@ return the set of keys with S3 (or could front) URLs.
 * Enfore SSL flag, for in production
 * Clean up uploaded s3 files if some URLs do not work.
 * Handle abortion if keep alive times out (clean up like before after request has ended).
+* Do logging, prefix logs with tagLogsWith option.
+* Add auth header.
 
 
 # API Usage
@@ -18,6 +20,10 @@ API will always return 200 OK, but errors may occur. Reason for this is that we'
 start sending data to client right away, to keep connection open and stop Heroku from killing us.
 We will know at a later point in time if some URLs fails or not and the status is serialized
 in the JSON response. It will either be "ok", "error", or "timeout".
+
+A request to the API should behave in a transactional manner, meaning that either all
+given URLs are successfully uploaded, or non will be stored on S3. We will try and clean
+any uploaded files to S3 if other files fail.
 
 In production all requests must be over https due to AWS credentials being passed around.
 
@@ -97,7 +103,7 @@ In production all requests must be over https due to AWS credentials being passe
   "urls": {
     "thumb": null,
     "monitor": {
-      "s3": "Some message from s3 when we tried to upload this file"
+      "s3": "Some message or object(!) from s3 when we tried to upload this file"
     }
   }
 }
