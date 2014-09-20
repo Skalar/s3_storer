@@ -23,7 +23,10 @@ A request to the API should behave in a transactional manner, meaning that eithe
 given URLs are successfully uploaded, or non will be stored on S3. We will try and clean
 any uploaded files to S3 if other files fail.
 
-In production all requests must be over https due to AWS credentials being passed around.
+#### Important - security of the API
+In production all requests **must be sent over https** due to credentials being passed around. Please
+see ENV variables `REQUIRE_SSL` which should be true in production, and `BEHIND_PROXY` if you for instance
+are deploing on Heroku.
 
 ### POST to `/store` (auth header to be added)
 ```json
@@ -145,4 +148,5 @@ bucket and a user on AWS which only has access to this bucket.
 
 
 # Deployment
-Is done to Heroku. Do the normal `git push heroku master`.
+Is may deployed on Heroku. Do the normal `git push heroku master`, or deploy to other servers
+you feel comfortable with.
