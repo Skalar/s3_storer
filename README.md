@@ -7,7 +7,7 @@ return the set of keys with S3 (or could front) URLs.
 
 # TODO
 
-* Add auth header.
+* Add auth header to restrict usage to autenticated users.
 * Handle abortion if keep alive times out (clean up like before after request has ended).
 * Do logging, prefix logs with tagLogsWith option.
 
@@ -28,7 +28,7 @@ In production all requests **must be sent over https** due to credentials being 
 see ENV variables `REQUIRE_SSL` which should be true in production, and `BEHIND_PROXY` if you for instance
 are deploing on Heroku.
 
-### POST to `/store` (auth header to be added)
+### POST to `/store`
 ```json
 {
   "urls": {
