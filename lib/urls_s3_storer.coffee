@@ -40,12 +40,13 @@ class UrlsS3Storer
   store: ->
     new RSVP.Promise (resolve, reject) =>
       @timers.start 'complete-process'
-      @log "STARTING download and upload of #{@urls.length}."
+      @log "STARTING download and upload of #{_.keys(@urls).length} urls."
 
       storePromises = {}
 
-      for key, url of @urls
-        storePromises[key] = new UrlS3Storer(url, @options).store()
+      for ident, url of @urls
+        @log "#{ident} - #{url}"
+        storePromises[ident] = new UrlS3Storer(ident, url, @options).store()
 
       RSVP.hashSettled(storePromises)
         .then (results) =>

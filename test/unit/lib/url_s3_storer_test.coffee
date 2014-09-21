@@ -13,7 +13,7 @@ url = 'https://www.filepicker.io/api/file/foo'
 
 describe "UrlS3Storer", ->
   beforeEach ->
-    storer = new UrlS3Storer url, awsOptions
+    storer = new UrlS3Storer 'thumb', url, awsOptions
 
   describe "#store", ->
     describe "success", ->

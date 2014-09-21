@@ -7,7 +7,7 @@ RSVP = require 'rsvp'
 Timers = require './timers'
 
 class UrlS3Storer
-  constructor: (@url, @options) ->
+  constructor: (@ident, @url, @options) ->
     @logger = @options.logger
     @timers = new Timers
 
@@ -26,7 +26,7 @@ class UrlS3Storer
 
       @httpClient().get @url, (getUrlStream) =>
         if @isHttpStatusOk getUrlStream.statusCode
-          @log "-> GET #{@url} (#{@timers.stop 'download'} ms)"
+          @log "-> GET #{@ident} (#{@timers.stop 'download'} ms)"
           @uploadToS3 getUrlStream, resolve, reject
         else
           @bufferResponseAndFail(getUrlStream, resolve, reject)
@@ -54,14 +54,13 @@ class UrlS3Storer
       ContentType: streamToUpload.headers['content-type']
 
     @timers.start 'upload'
-    @log "--> UPLOAD #{@url} to S3"
 
     @s3Client().putObject(params)
       .then (data) =>
-        @log "---> DONE UPLOADING #{@url} to #{@options.s3Bucket}/#{@bucketKey()} (#{@timers.stop 'upload'} ms)"
+        @log "---> UPLOADED #{@ident} to #{@options.s3Bucket}/#{@bucketKey()} (#{@timers.stop 'upload'} ms)"
         resolve @uploadedUrl()
       .catch (err) =>
-        @log "---> FAILED UPLOADING #{@url} to #{@options.s3Bucket}/#{@bucketKey()} due to #{err} (#{@timers.stop 'upload'} ms)"
+        @log "---> FAILED UPLOADING #{@ident} to #{@options.s3Bucket}/#{@bucketKey()} due to #{err} (#{@timers.stop 'upload'} ms)"
         reject s3: err
 
 
