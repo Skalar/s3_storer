@@ -34,11 +34,12 @@ setupKeepAlive = (res, waitSeconds, maxIterations) ->
   # Maybe this is a bit hackish?
   #
   originalEnd = res.end
-  res.end = (data) ->
+  res.end = (data, encoding) ->
     debug "end() called. Clear emitter and call end()"
     clearTimeout emitterTimer
-    originalEnd.bind(@)(data)
 
+    res.end = originalEnd
+    res.end data, encoding
 
 
 # Returns a middle ware which has a job of keeping Heroku connections alive
