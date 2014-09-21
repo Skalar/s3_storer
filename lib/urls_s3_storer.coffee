@@ -2,9 +2,14 @@ RSVP = require 'rsvp'
 _ = require 'lodash'
 UrlS3Storer = require './url_s3_storer'
 S3Client = require './s3_client'
+Timers = require './timers'
 
 class UrlsS3Storer
   constructor: (@urls, @options) ->
+    @logger = @options.logger
+    @timers = new Timers
+
+  log: (msg, level = 'info') -> @logger[level](msg) if @logger
 
   # Public: Download all urls and stores on S3.
   #
@@ -34,6 +39,9 @@ class UrlsS3Storer
   #
   store: ->
     new RSVP.Promise (resolve, reject) =>
+      @timers.start 'complete-process'
+      @log "STARTING download and upload of #{@urls.length}."
+
       storePromises = {}
 
       for key, url of @urls
@@ -42,11 +50,14 @@ class UrlsS3Storer
       RSVP.hashSettled(storePromises)
         .then (results) =>
           if @allResultsFulfilled results
+            duration = @timers.stop 'complete-process'
+            @log "COMPLETED in #{duration} ms."
+
             resolve @mapPromisResultsToUrls(results)
           else
             @cleanSuccessesAndMapToErrors(results, reject)
-
-        .catch (error) ->
+        .catch (error) =>
+          @log "FAILED unexpectedly due to. #{error}"
           reject error: error
 
 
@@ -75,9 +86,12 @@ class UrlsS3Storer
 
 
     @s3Client().deleteUrls(urlsToDelete, @options.s3Bucket)
-      .then ->
+      .then =>
+        duration = @timers.stop 'complete-process'
+        @log "FAILED - clean complete. Duration: #{duration} ms."
         reject out
-      .catch (err) ->
+      .catch (err) =>
+        @log "FAILED - clean failed too :( Duration: #{duration} ms."
         reject err
 
 

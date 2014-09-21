@@ -38,7 +38,10 @@ router.post '/', (req, res) ->
       status: 'error'
       errors: errors
   else
-    storer = new UrlS3Storer req.body.urls, req.body.options
+    options = req.body.options
+    options.logger = req.logger
+    storer = new UrlS3Storer req.body.urls, options
+
     storer.store()
       .then (urls) ->
         res.end JSON.stringify

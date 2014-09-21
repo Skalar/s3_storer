@@ -8,7 +8,6 @@ return the set of keys with S3 (or could front) URLs.
 # TODO
 
 * Handle abortion if keep alive times out (clean up like before after request has ended).
-* Do logging, prefix logs with tagLogsWith option.
 
 
 # API Usage
@@ -42,19 +41,21 @@ access to your API.
     "awsSecretAccessKey": "xxx",
     "s3Bucket": "xxx",
     "s3Region": "xxx",
-    "cloudfrontHost": "xxx", # Optional
-    "tagLogsWith": "iweb-production asset-123" # Optional
+    "cloudfrontHost": "xxx" # Optional
   }
 }
 ```
 * Give key-value pairs of URLs to download, store on S3 and return URLs for.
 * Available options
-  * `tagLogsWith` A string you want tag all logs related to this request with.
   * `awsAccessKeyId` AWS access key
   * `awsSecretAccessKey` AWS access secret
   * `s3Bucket` AWS bucket you want files uploaded to
   * `s3Region` AWS region you want files uploaded to
   * `cloudfrontHost` AWS cloud front, if any.
+* Available HTTP headers
+  * `Tag-Logs-With` A string you want this request to be tagged with.
+    For instance `iweb prod asset-123` will log as `[iweb] [prod] [asset-123]`
+
 
 --------------------------------
 

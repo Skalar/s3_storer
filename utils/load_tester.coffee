@@ -145,6 +145,7 @@ class LoadTester
       options.headers =
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength data, 'utf8'
+        'Tag-Logs-With': 'load_tester'
 
       req = @httpClient().request options, (res) ->
         if res.statusCode is 200

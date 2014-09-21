@@ -1,13 +1,17 @@
-debug = require('debug')('s3_storer:url_s3_storer')
 sha1 = require 'sha1'
 concat = require 'concat-stream'
 S3Client = require './s3_client'
 http = require 'http'
 https = require 'https'
 RSVP = require 'rsvp'
+Timers = require './timers'
 
 class UrlS3Storer
   constructor: (@url, @options) ->
+    @logger = @options.logger
+    @timers = new Timers
+
+  log: (msg, level = 'info') -> @logger[level](msg) if @logger
 
   # Public: Download url and stores on S3.
   #
@@ -18,10 +22,11 @@ class UrlS3Storer
   #   s3: 'Upload to S3 failed' | errorObject
   store: ->
     new RSVP.Promise (resolve, reject) =>
-      debug "GET #{@url}"
+      @timers.start 'download'
 
       @httpClient().get @url, (getUrlStream) =>
         if @isHttpStatusOk getUrlStream.statusCode
+          @log "-> GET #{@url} (#{@timers.stop 'download'} ms)"
           @uploadToS3 getUrlStream, resolve, reject
         else
           @bufferResponseAndFail(getUrlStream, resolve, reject)
@@ -48,21 +53,22 @@ class UrlS3Storer
       ContentLength: streamToUpload.headers['content-length']
       ContentType: streamToUpload.headers['content-type']
 
-    debug "--> Uploading to S3 #{@options.s3Bucket} #{@bucketKey()}"
+    @timers.start 'upload'
+    @log "--> UPLOAD #{@url} to S3"
 
     @s3Client().putObject(params)
       .then (data) =>
-        debug "---> Done #{@options.s3Bucket} #{@bucketKey()}"
+        @log "---> DONE UPLOADING #{@url} to #{@options.s3Bucket}/#{@bucketKey()} (#{@timers.stop 'upload'} ms)"
         resolve @uploadedUrl()
-      .catch (err) ->
-        debug "---> Failed bucket upload #{err}."
+      .catch (err) =>
+        @log "---> FAILED UPLOADING #{@url} to #{@options.s3Bucket}/#{@bucketKey()} due to #{err} (#{@timers.stop 'upload'} ms)"
         reject s3: err
 
 
   bufferResponseAndFail: (failedStream, resolve, reject) ->
-    failedStream.pipe concat (buffer) ->
+    failedStream.pipe concat (buffer) =>
       body = buffer.toString()
-      debug "--> Failed #{failedStream.statusCode} #{body}"
+      @log "--> Failed #{failedStream.statusCode} #{body} (#{@timers.stop 'download'} ms)"
 
       reject
         downloadResponse:
