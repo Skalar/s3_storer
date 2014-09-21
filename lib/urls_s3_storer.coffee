@@ -5,11 +5,19 @@ S3Client = require './s3_client'
 Timers = require './timers'
 
 class UrlsS3Storer
-  constructor: (@urls, @options) ->
+  constructor: (@urls, @options, @urlStorerClass = UrlS3Storer) ->
     @logger = @options.logger
     @timers = new Timers
+    @abort = false
 
   log: (msg, level = 'info') -> @logger[level](msg) if @logger
+
+  # Public: If called before we have finished we'll abort.
+  #
+  # Has no effect when called after we have finished store()
+  abortUnlessFinished: ->
+    @log "ABORT - asked to abort"
+    @abort = true
 
   # Public: Download all urls and stores on S3.
   #
@@ -46,17 +54,20 @@ class UrlsS3Storer
 
       for ident, url of @urls
         @log "#{ident} - #{url}"
-        storePromises[ident] = new UrlS3Storer(ident, url, @options).store()
+        storePromises[ident] = new @urlStorerClass(ident, url, @options).store()
 
       RSVP.hashSettled(storePromises)
         .then (results) =>
-          if @allResultsFulfilled results
-            duration = @timers.stop 'complete-process'
-            @log "COMPLETED in #{duration} ms."
-
-            resolve @mapPromisResultsToUrls(results)
+          if @abort
+            @cleanAndAbort results, reject
           else
-            @cleanSuccessesAndMapToErrors(results, reject)
+            if @allResultsFulfilled results
+              duration = @timers.stop 'complete-process'
+              @log "COMPLETED in #{duration} ms."
+
+              resolve @mapPromisResultsToUrls(results)
+            else
+              @cleanSuccessesAndMapToErrors results, reject
         .catch (error) =>
           @log "FAILED unexpectedly due to. #{error}"
           reject error: error
@@ -74,7 +85,7 @@ class UrlsS3Storer
 
     urls
 
-  cleanSuccessesAndMapToErrors: (results, reject) ->
+  cleanSuccessesAndMapToErrors: (results, done) ->
     out = {}
     urlsToDelete = []
 
@@ -90,10 +101,28 @@ class UrlsS3Storer
       .then =>
         duration = @timers.stop 'complete-process'
         @log "FAILED - clean complete. Duration: #{duration} ms."
-        reject out
+        done out
       .catch (err) =>
         @log "FAILED - clean failed too :( Duration: #{duration} ms."
-        reject err
+        done err
+
+
+  cleanAndAbort: (results, done) ->
+    out = {}
+    urlsToDelete = []
+
+    for key, result of results
+      urlsToDelete.push result.value if result.state is 'fulfilled'
+      out[key] = aborted: true
+
+    @s3Client().deleteUrls(urlsToDelete, @options.s3Bucket)
+      .then =>
+        duration = @timers.stop 'complete-process'
+        @log "ABORTED - clean complete. Duration: #{duration} ms."
+        done out
+      .catch (err) =>
+        @log "ABORTED - clean failed :( Duration: #{duration} ms."
+        done out
 
 
   s3Client: -> new S3Client @options

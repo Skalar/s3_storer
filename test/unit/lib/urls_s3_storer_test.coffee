@@ -1,6 +1,7 @@
 require('../../spec_helper')()
 
 nock = require 'nock'
+RSVP = require 'rsvp'
 UrlsS3Storer = require '../../../lib/urls_s3_storer'
 serviceMocks = require '../../helpers/external_service_mocks'
 awsOptions = require('../../helpers/aws_options')()
@@ -36,7 +37,6 @@ describe "UrlsS3Storer", ->
         thumb: "http://#{storer.options.cloudfrontHost}/c0d0e5b6d2dc601831a6d51adfc034f87c351c4b"
         monitor: "http://#{storer.options.cloudfrontHost}/7b0e739fa4547913899bebc9d16abe11b538cbe2"
 
-
   describe "failures", ->
     beforeEach ->
       serviceMocks.nockFilePickerServer '/api/file/thumb'
@@ -51,3 +51,34 @@ describe "UrlsS3Storer", ->
           downloadResponse:
             status: 404
             body: "Not found"
+
+
+
+  describe "abortion during store", ->
+    clock = null
+    urlStorerMock = ->
+      store: ->
+        new RSVP.Promise (resolve, reject) ->
+          setTimeout reject, 1000
+
+
+    beforeEach ->
+      storer = new UrlsS3Storer urls, awsOptions, urlStorerMock
+      clock = sinon.useFakeTimers()
+
+    afterEach ->
+      clock.restore()
+
+
+    it "aborts and cleans", ->
+      storePromise = storer.store()
+
+      clock.tick 100
+      storer.abortUnlessFinished()
+      clock.tick 1000
+
+      expect(storePromise).to.be.rejected.eventually.have.deep.eq
+        thumb:
+          aborted: true
+        monitor:
+          aborted: true

@@ -1,17 +1,12 @@
 # S3 storer
-
 Node app for receiving a set of keys and URLs, store the URL on S3 and
 return the set of keys with S3 (or could front) URLs.
 
 [ ![Codeship Status for inviso-org/s3_storer](https://www.codeship.io/projects/650e6580-2260-0132-8503-364bcc8fbc9d/status)](https://www.codeship.io/projects/36519)
 
-# TODO
-
-* Handle abortion if keep alive times out (clean up like before after request has ended).
 
 
 # API Usage
-
 API will return 200 OK, but errors may occur during requests. The reason for this is that we'll
 start sending data to client right away, to keep connection open and stop Heroku from killing us.
 We will know at a later point in time if some URLs fails or not and the status is serialized
@@ -23,11 +18,15 @@ A request to the API should behave in a transactional manner, meaning that eithe
 given URLs are successfully uploaded, or non will be stored on S3. We will try and clean
 any uploaded files to S3 if other files fail.
 
+
+
 #### Important - security of the API
 In production all requests **must be sent over https** due to credentials being passed around. Please
 see ENV variables `REQUIRE_SSL` which should be true in production, and `BEHIND_PROXY` if you for instance
 are deploing on Heroku. You should also set `BASIC_AUTH_USER` and `BASIC_AUTH_PASSWORD` to restrict
 access to your API.
+
+
 
 ### POST to `/store`
 ```json
@@ -135,7 +134,6 @@ nodemon --exec coffee bin/www
 
 
 
-
 ### Tests
 Tests are written using [Mocha](http://visionmedia.github.io/mocha/) and
 [Chai expect](http://chaijs.com/guide/styles/#expect) syntax style.
@@ -148,6 +146,7 @@ You can also run `mocha path/to/test` if you want to run specific tests.
 In our tests some ENV variables are important. They all start with `TEST_*`
 and you find examples in `.envrc.example`. You need to create and configure your own bucket
 for integration testing.
+
 
 
 # Deployment

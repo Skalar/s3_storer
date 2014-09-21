@@ -42,6 +42,8 @@ router.post '/', (req, res) ->
     options.logger = req.logger
     storer = new UrlS3Storer req.body.urls, options
 
+    res.on 'keepAliveTimeout', -> storer.abortUnlessFinished()
+
     storer.store()
       .then (urls) ->
         res.end JSON.stringify
