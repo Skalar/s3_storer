@@ -87,17 +87,17 @@ class LoadTester
 
       RSVP.all(requestPromises)
         .then (responses) =>
-          t2 = new Date
-          duration = (t2-t1)/1000
-          avg = duration / requestPromises.length
-
           @responses = _.filter responses, (response) -> _.isObject response
           @successes = _.filter @responses, {status: 'ok'}
           @failures  = _.filter @responses, (r) -> r.status is 'error' or r.status is 'timeout'
 
+          t2 = new Date
+          duration = (t2 - t1) / 1000
+          avg = duration / @successes.length
+
           debug "------------------------------------------------------------------------"
-          debug "Completed #{@responses.length} requests in #{duration}s. Avg: #{avg}"
-          debug "Successes: #{@successes.length}"
+          debug "Completed #{@successes.length}"
+          debug "Successes: #{@successes.length} requests in #{duration}s. Avg for successes: #{avg}"
           debug "Failures: #{@failures.length}"
           debug "------------------------------------------------------------------------"
 
@@ -106,7 +106,7 @@ class LoadTester
 
 
   downloadUploadedFilesTo: (path) ->
-    debug "Download files to #{path} [TODO]"
+    debug "Download files to #{path}"
 
     new RSVP.Promise (resolve, reject) =>
       urls = _.flatten _.map @successes, (response) -> _.values response.urls
