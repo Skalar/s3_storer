@@ -1,17 +1,27 @@
 require('../../../spec_helper')()
+EventEmitter = require('events').EventEmitter
 
 keepAlive = require '../../../../lib/middleware/keep_alive'
 
-next = ->
-req = {}
-res =
-  writes: []
-  ended: null
+
+
+class MockResponse extends EventEmitter
+  constructor: ->
+    super()
+    @reset()
+
   reset: ->
     @writes = []
     @ended = null
+
   write: (data) -> @writes.push data
   end: (data) -> @ended = data
+
+
+
+next = ->
+req = {}
+res = new MockResponse
 
 
 
@@ -54,3 +64,8 @@ describe "middleware - keepAlive", ->
       middleware req, res, next
       clock.tick 3000
       expect(res.ended).to.eq JSON.stringify(status: "timeout")
+
+    it "emits keepAliveTimeout on the response", (done) ->
+      middleware req, res, next
+      res.on 'keepAliveTimeout', -> done()
+      clock.tick 3000

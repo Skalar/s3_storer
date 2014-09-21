@@ -21,7 +21,8 @@ setupKeepAlive = (res, waitSeconds, maxIterations) ->
           debug "No iterations left. End request."
 
           json = JSON.stringify status: "timeout"
-          res.end(json)
+          res.emit 'keepAliveTimeout'
+          res.end json
 
       waitSeconds * 1000
     )
@@ -44,7 +45,12 @@ setupKeepAlive = (res, waitSeconds, maxIterations) ->
 
 # Returns a middle ware which has a job of keeping Heroku connections alive
 #
-# Wrapps around res.end() and ensures that end() also stops our keep alive functionality.
+# Wrapps around res.end() and ensures that
+# end() also stops our keep alive functionality.
+#
+# emits 'keepAliveTimeout' on the res whenever a timeout occures so
+# listeners may have a change to finish work as the request will end.
+#
 module.exports = (waitSeconds = 15, maxIterations = 10) ->
   (req, res, next) ->
     setupKeepAlive res, waitSeconds, maxIterations
