@@ -93,7 +93,7 @@ class LoadTester
 
           @responses = _.filter responses, (response) -> _.isObject response
           @successes = _.filter @responses, {status: 'ok'}
-          @failures  = _.filter @responses, {status: ['timeout', 'error']}
+          @failures  = _.filter @responses, (r) -> r.status is 'error' or r.status is 'timeout'
 
           debug "------------------------------------------------------------------------"
           debug "Completed #{@responses.length} requests in #{duration}s. Avg: #{avg}"
