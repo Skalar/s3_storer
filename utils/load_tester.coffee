@@ -15,7 +15,8 @@ S3Client = require '../lib/s3_client'
 # and their urls have been swapped out for the responses we got from the API.
 #
 # You can download all files which were uploaded to S3 by calling
-# downloadUploadedFilesTo('/a/path/you/like').
+# downloadUploadedFilesTo('/a/path/you/like'). This past MUST exist, as we don't
+# take care of creating directories.
 #
 # Finally you can delete all files which were uploaded to S3 by calling
 # deleteUploadedFilesFromS3()
@@ -107,8 +108,14 @@ class LoadTester
   downloadUploadedFilesTo: (path) ->
     debug "Download files to #{path} [TODO]"
 
-    new RSVP.Promise (resolve, reject) ->
-      resolve()
+    new RSVP.Promise (resolve, reject) =>
+      urls = _.flatten _.map @successes, (response) -> _.values response.urls
+
+      dlPromisses = _.map urls, (url) => @download url, path
+
+      RSVP.all(dlPromisses)
+        .then(resolve)
+        .catch(reject)
 
   deleteUploadedFilesFromS3: ->
     debug "Delete files from S3"
@@ -126,6 +133,7 @@ class LoadTester
         .then (responseBody) ->
           resolve JSON.parse responseBody
         .catch (err) ->
+          console.log err
           resolve null
 
 
@@ -147,7 +155,7 @@ class LoadTester
         'Content-Length': Buffer.byteLength data, 'utf8'
         'Tag-Logs-With': 'load_tester'
 
-      req = @httpClient().request options, (res) ->
+      req = @apiHttpClient().request options, (res) ->
         if res.statusCode is 200
           res.pipe concat (buffer) -> resolve buffer.toString()
         else
@@ -164,10 +172,12 @@ class LoadTester
 
 
 
-  httpClient: ->
-    return @_httpClient if @_httpClient?
-    url = @source.api.url
-    @_httpClient = if url.match(/^https/) then https else http
+  httpClient: (url) -> if url.match(/^https/) then https else http
+
+  apiHttpClient: ->
+    return @_apiHttpClient if @_apiHttpClient?
+    @_apiHttpClient = @httpClient @source.api.url
+
 
   s3Client: ->
     return @_s3Client if @_s3Client?
@@ -179,7 +189,23 @@ class LoadTester
 
 
 
+  download: (url, path) ->
+    new RSVP.Promise (resolve, reject) =>
+      @httpClient(url).get url, (res) ->
+        if res.statusCode is 200
+          parts = urlParser.parse url
+          pathToFile = [path, parts.path].join ''
 
+          file = fs.createWriteStream pathToFile
+          file.on 'finish', -> resolve()
+          file.on 'error', (err) -> reject err
+
+          res.pipe file
+        else
+          res.pipe concat (buffer) ->
+            code = res.statusCode
+            body = buffer.toString()
+            reject "API responded not 200 OK. Was #{code}. Body: '#{body}'"
 
 
 module.exports = LoadTester
