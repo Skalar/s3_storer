@@ -1,6 +1,6 @@
 # S3 storer
-Node app for receiving a set of keys and URLs, store the URL on S3 and
-return the set of keys with S3 (or could front) URLs.
+Node app for receiving a set of keys and URLs, store the URLs on S3 and
+return the set of keys with S3 (or CouldFront) URLs.
 
 [ ![Codeship Status for inviso-org/s3_storer](https://www.codeship.io/projects/650e6580-2260-0132-8503-364bcc8fbc9d/status)](https://www.codeship.io/projects/36519)
 
@@ -28,7 +28,18 @@ access to your API.
 
 
 
-### POST to `/store`
+## POST to `/store`
+* Give key-value pairs of URLs to download, store on S3 and return URLs for.
+* Available options
+  * `awsAccessKeyId` AWS access key
+  * `awsSecretAccessKey` AWS access secret
+  * `s3Bucket` AWS bucket you want files uploaded to
+  * `s3Region` AWS region you want files uploaded to
+  * `cloudfrontHost` AWS cloud front, if any.
+* Available HTTP headers
+  * `Tag-Logs-With` A string you want this request to be tagged with.
+    For instance `iweb prod asset-123` will log as `[iweb] [prod] [asset-123]`
+
 ```json
 {
   "urls": {
@@ -44,16 +55,6 @@ access to your API.
   }
 }
 ```
-* Give key-value pairs of URLs to download, store on S3 and return URLs for.
-* Available options
-  * `awsAccessKeyId` AWS access key
-  * `awsSecretAccessKey` AWS access secret
-  * `s3Bucket` AWS bucket you want files uploaded to
-  * `s3Region` AWS region you want files uploaded to
-  * `cloudfrontHost` AWS cloud front, if any.
-* Available HTTP headers
-  * `Tag-Logs-With` A string you want this request to be tagged with.
-    For instance `iweb prod asset-123` will log as `[iweb] [prod] [asset-123]`
 
 
 --------------------------------
@@ -114,7 +115,8 @@ access to your API.
 
 
 ### RESPONSE - failure timeout
-* Status is `timeout` due to max keep alive time exceeded.
+* Status is `timeout` due to max keep alive time exceeded. See `lib/middleware/keep_alive.coffee`
+  and `ENV` variables `KEEP_ALIVE_WAIT_SECONDS` and `KEEP_ALIVE_MAX_ITERATIONS`.
 * Any uploads to S3 we have done will be cleaned.
 
 ```json
@@ -123,6 +125,59 @@ access to your API.
 }
 ```
 
+## DELETE to `/delete`
+* The `/delete` action is more of a convenience action. I guess you applicaiton
+  language have an AWS SDK available and you could potentially use that directly.
+  If you feel like it's just as easy to make a DELETE call to the S3 Storage API
+  feel free to do so.
+* Give array of URLs to delete.
+* Available options
+  * `awsAccessKeyId` AWS access key
+  * `awsSecretAccessKey` AWS access secret
+  * `s3Bucket` AWS bucket you want files uploaded to
+  * `s3Region` AWS region you want files uploaded to
+* Available HTTP headers
+  * `Tag-Logs-With` A string you want this request to be tagged with.
+    For instance `iweb prod asset-123` will log as `[iweb] [prod] [asset-123]`
+
+```json
+{
+  "urls": {
+    "http://file.in.your.s3.bucket.com/object1",
+    "http://file.in.your.s3.bucket.com/object2"
+  },
+  "options": {
+    "awsAccessKeyId": "xxx",
+    "awsSecretAccessKey": "xxx",
+    "s3Bucket": "xxx",
+    "s3Region": "xxx",
+  }
+}
+```
+
+### RESPONSE - success
+* Status is `ok`
+
+```json
+{
+  "status": "ok"
+}
+```
+
+
+### RESPONSE - failure
+* Status is `error`
+
+```json
+{
+  "status": "error",
+  "description": "Some explantion of the error."
+}
+```
+
+Errors isn't likely to happen, as we do not actually check if
+bucket has given URLs / objects. We just make a deleteObjects call
+to S3 and expect S3 to remove given object keys.
 
 
 # Development
