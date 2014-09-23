@@ -13,7 +13,7 @@ s3Client = new S3Client awsOptions()
 validDeleteRequestJson = null
 
 
-testFileS3URL = 'http://inviso-integration-test.s3-eu-west-1.amazonaws.com/6bb610a613f6ea25e695f7df7d13640be642553c'
+testFileS3URL = "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com/6bb610a613f6ea25e695f7df7d13640be642553c"
 validStoreRequestJson =
   urls:
     thumb: 'https://www.filepicker.io/api/file/JhJKMtnRDW9uLYcnkRKW/convert?crop=41,84,220,220'

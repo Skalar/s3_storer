@@ -30,8 +30,8 @@ describe "POST /store", ->
     afterEach ->
       s3Client.deleteUrls(
         [
-          'http://inviso-integration-test.s3-eu-west-1.amazonaws.com/6bb610a613f6ea25e695f7df7d13640be642553c'
-          'http://inviso-integration-test.s3-eu-west-1.amazonaws.com/b981b9d5369fc4dd5f71063fb8c0a378c65afd13'
+          "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com//6bb610a613f6ea25e695f7df7d13640be642553c"
+          "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com//b981b9d5369fc4dd5f71063fb8c0a378c65afd13"
         ]
         awsOptions().s3Bucket
       ).catch (err) -> console.log "FAILED to clean after integration tests! Error: #{err}"
@@ -46,8 +46,8 @@ describe "POST /store", ->
 
           expect(response.status).to.eq 'ok'
           expect(response.urls).to.deep.eq
-            thumb: 'http://inviso-integration-test.s3-eu-west-1.amazonaws.com/6bb610a613f6ea25e695f7df7d13640be642553c'
-            monitor: 'http://inviso-integration-test.s3-eu-west-1.amazonaws.com/b981b9d5369fc4dd5f71063fb8c0a378c65afd13'
+            thumb: "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com/6bb610a613f6ea25e695f7df7d13640be642553c"
+            monitor: "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com/b981b9d5369fc4dd5f71063fb8c0a378c65afd13"
 
           done()
 

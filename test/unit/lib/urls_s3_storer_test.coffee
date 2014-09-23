@@ -41,7 +41,7 @@ describe "UrlsS3Storer", ->
     beforeEach ->
       serviceMocks.nockFilePickerServer '/api/file/thumb'
       nock('https://www.filepicker.io').get('/api/file/monitor').reply 404, "Not found"
-      nock('https://inviso-integration-test.s3-eu-west-1.amazonaws.com').post('/?delete').reply 200
+      nock("https://#{awsOptions.s3Bucket}.s3-#{awsOptions.s3Region}.amazonaws.com").post('/?delete').reply 200
       serviceMocks.nockS3Api urls.thumb, awsOptions
 
     it "responds with error for URL failed, and null for urls which worked", ->
