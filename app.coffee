@@ -20,5 +20,6 @@ app.use require './lib/middleware/redirect_non_ssl'
 #
 app.get '/', (req, res) -> res.status(200).end "OK"
 app.use '/store', require('./routes/store')
+app.use '/delete', require('./routes/delete')
 
 module.exports = app

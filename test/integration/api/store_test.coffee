@@ -1,8 +1,8 @@
 require('../../spec_helper')()
 
 nock = require 'nock'
-awsOptions = require('../../helpers/aws_options')
-verifyDataEqual = require('../../helpers/verify_data_equal')
+awsOptions = require '../../helpers/aws_options'
+verifyDataEqual = require '../../helpers/verify_data_equal'
 app = require '../../../app'
 S3Client = require '../../../lib/s3_client'
 request = require 'supertest'

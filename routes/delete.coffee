@@ -1,28 +1,24 @@
 express = require 'express'
 router = express.Router()
-keepAlive = require '../lib/middleware/keep_alive'
-UrlS3Storer = require '../lib/urls_s3_storer'
 expressValidator = require 'express-validator'
 bodyParser = require 'body-parser'
 _ = require 'lodash'
+S3Client = require '../lib/s3_client'
 
-
-
-
-router.use keepAlive(
-  process.env.KEEP_ALIVE_WAIT_SECONDS || 15,
-  process.env.KEEP_ALIVE_MAX_ITERATIONS || 10
-)
 
 router.use bodyParser.json()
 router.use expressValidator
   customValidators:
     notMissing: (value) -> not _.isEmpty value
+    isArray: (value) -> Array.isArray value
 
 
 
-router.post '/', (req, res) ->
-  req.checkBody('urls', 'missing').notMissing()
+
+
+router.delete '/', (req, res) ->
+  req.checkBody('urls', 'must be an array').isArray()
+  req.checkBody('urls', 'must be at least one URL').isLength 1
 
   # TODO refactor #1 - validation of request
   req.checkBody('options', 'missing').notMissing()
@@ -40,20 +36,17 @@ router.post '/', (req, res) ->
       errors: errors
   else
     options = req.body.options
-    options.logger = req.logger
-    storer = new UrlS3Storer req.body.urls, options
+    urls = req.body.urls
 
-    res.on 'keepAliveTimeout', -> storer.abortUnlessFinished()
-
-    storer.store()
-      .then (urls) ->
-        res.end JSON.stringify
-          status: 'ok'
-          urls: urls
-      .catch (urlsWithError) ->
-        res.end JSON.stringify
+    client = new S3Client options
+    client.deleteUrls(urls, options.s3Bucket)
+      .then ->
+        res.json status: 'ok'
+      .catch (err) ->
+        res.status(500).json
           status: 'error'
-          urlsWithError: urlsWithError
+          description: err
+
 
 
 module.exports = router
