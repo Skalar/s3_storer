@@ -119,6 +119,27 @@ describe "POST /store", ->
           expect(error.msg).to.eq('missing')
           done()
 
+
+    it "status error on connection refused", (done) ->
+      json = validRequestJson
+      json.urls.thumb = 'http://www.ergmerigjoerjgeijwefwef.com/'
+
+      request(app).
+        post('/store').
+        send(json).
+        expect(200).
+        end (err, res) ->
+          response = JSON.parse res.text
+
+          expect(response.status).to.eq 'error'
+          expect(response.urlsWithError).to.have.deep
+            .property 'thumb.downloadResponse.status', 'ENOTFOUND'
+          expect(response.urlsWithError).to.have.deep
+            .property 'thumb.downloadResponse.body', 'Error: getaddrinfo ENOTFOUND'
+
+          done()
+
+
     it "responds with 422 when options are missing", (done) ->
       json = validRequestJson
       delete json.options

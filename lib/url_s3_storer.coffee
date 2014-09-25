@@ -24,12 +24,18 @@ class UrlS3Storer
     new RSVP.Promise (resolve, reject) =>
       @timers.start 'download'
 
-      @httpClient().get @url, (getUrlStream) =>
+      res = @httpClient().get @url, (getUrlStream) =>
         if @isHttpStatusOk getUrlStream.statusCode
           @log "-> GET #{@ident} (#{@timers.stop 'download'} ms)"
           @uploadToS3 getUrlStream, resolve, reject
         else
           @bufferResponseAndFail(getUrlStream, resolve, reject)
+
+      res.on 'error', (err) ->
+        reject
+          downloadResponse:
+            status: err.code
+            body: err.toString()
 
 
   bucketKey: -> sha1 @url
