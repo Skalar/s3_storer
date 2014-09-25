@@ -22,4 +22,10 @@ app.get '/', (req, res) -> res.status(200).end "OK"
 app.use '/store', require('./routes/store')
 app.use '/delete', require('./routes/delete')
 
+app.use (err, req, res, next) ->
+  req.logger.error err.stack
+  res.status(500).end JSON.stringify
+    status: 'error'
+    description: 'Internal server error'
+
 module.exports = app
