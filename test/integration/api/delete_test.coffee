@@ -71,33 +71,42 @@ describe "DELETE /delete", ->
               checkStatusOfTestFile 403, done
 
   describe "invalid requests", ->
-    it "responds with 422 when urls are not an array", (done) ->
+    it "responds with 422 when urls are not present", (done) ->
       json = validDeleteRequestJson
-      delete json.urls = ''
+      delete json.urls
 
       request(app)
         .delete('/delete')
         .send(json)
         .expect(422)
         .end (err, res) ->
-          error = _.find res.body.errors, (error) -> error.param is 'urls'
-
-          expect(error.msg).to.eq('must be an array')
+          expect(res.body.errors['/']).to.contain 'Missing required property: urls'
           done()
 
 
-    it "responds with 422 when urls are not an array", (done) ->
+    it "responds with 422 when urls are an empty array", (done) ->
       json = validDeleteRequestJson
-      delete json.urls = []
+      json.urls = []
 
       request(app)
         .delete('/delete')
         .send(json)
         .expect(422)
         .end (err, res) ->
-          error = _.find res.body.errors, (error) -> error.param is 'urls'
+          expect(res.body.errors['/urls']).to.contain 'Array is too short (0), minimum 1'
+          done()
 
-          expect(error.msg).to.eq('must be at least one URL')
+    it "responds with 422 when urls contains invalid urls", (done) ->
+      json = validDeleteRequestJson
+      json.urls = ['http://www.example.com', 'foo', '']
+
+      request(app)
+        .delete('/delete')
+        .send(json)
+        .expect(422)
+        .end (err, res) ->
+          expect(res.body.errors['/urls/1']).to.contain 'Format validation failed (URI expected)'
+          expect(res.body.errors['/urls/2']).to.contain 'Format validation failed (URI expected)'
           done()
 
 
@@ -110,7 +119,5 @@ describe "DELETE /delete", ->
         .send(json)
         .expect(422)
         .end (err, res) ->
-          error = _.find res.body.errors, (error) -> error.param is 'options.s3Region'
-
-          expect(error.msg).to.eq('Invalid value')
+          expect(res.body.errors['/options']).to.contain 'Missing required property: s3Region'
           done()
