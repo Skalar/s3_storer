@@ -85,6 +85,9 @@ describe "POST /store", ->
 
           done()
 
+
+
+
   describe "invalid requests", ->
     it "responds with useful error when AWS credentials are wrong", (done) ->
       validRequestJson.options.awsSecretAccessKey = 'foobar'
@@ -114,9 +117,20 @@ describe "POST /store", ->
         send(json).
         expect(422).
         end (err, res) ->
-          error = _.find res.body.errors, (error) -> error.param is 'urls'
+          expect(res.body.errors['/']).to.contain 'Missing required property: urls'
+          done()
 
-          expect(error.msg).to.eq('missing')
+    it "responds with 422 when urls are invalid", (done) ->
+      json = validRequestJson
+      json.urls =
+        foo: 'bar'
+
+      request(app).
+        post('/store').
+        send(json).
+        expect(422).
+        end (err, res) ->
+          expect(res.body.errors['/urls/foo']).to.contain 'Format validation failed (URI expected)'
           done()
 
 
@@ -149,9 +163,7 @@ describe "POST /store", ->
         send(json).
         expect(422).
         end (err, res) ->
-          error = _.find res.body.errors, (error) -> error.param is 'options'
-
-          expect(error.msg).to.eq('missing')
+          expect(res.body.errors['/']).to.contain 'Missing required property: options'
           done()
 
 
@@ -164,10 +176,9 @@ describe "POST /store", ->
         send(json).
         expect(422).
         end (err, res) ->
-          error = _.find res.body.errors, (error) -> error.param is 'options.awsAccessKeyId'
-
-          expect(error.msg).to.eq('Invalid value')
+          expect(res.body.errors['/options']).to.contain 'Missing required property: awsAccessKeyId'
           done()
+
 
 
     it "responds with 422 when cloudfrontHost is invalid", (done) ->
@@ -179,9 +190,7 @@ describe "POST /store", ->
         send(json).
         expect(422).
         end (err, res) ->
-          error = _.find res.body.errors, (error) -> error.param is 'options.cloudfrontHost'
-
-          expect(error.msg).to.eq('Invalid value')
+          expect(res.body.errors['/options/cloudfrontHost']).to.contain 'Format validation failed (URI expected)'
           done()
 
 
@@ -194,7 +203,5 @@ describe "POST /store", ->
         send(json).
         expect(422).
         end (err, res) ->
-          error = _.find res.body.errors, (error) -> error.param is 'options.s3Region'
-
-          expect(error.msg).to.eq('Invalid value')
+          expect(res.body.errors['/options']).to.contain 'Missing required property: s3Region'
           done()
