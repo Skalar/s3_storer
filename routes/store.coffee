@@ -1,12 +1,9 @@
 express = require 'express'
 router = express.Router()
 keepAlive = require '../lib/middleware/keep_alive'
-UrlS3Storer = require '../lib/urls_s3_storer'
-expressValidator = require 'express-validator'
+validation = require '../lib/validation'
 bodyParser = require 'body-parser'
-_ = require 'lodash'
-
-
+UrlS3Storer = require '../lib/urls_s3_storer'
 
 
 router.use keepAlive(
@@ -15,24 +12,9 @@ router.use keepAlive(
 )
 
 router.use bodyParser.json()
-router.use expressValidator
-  customValidators:
-    notMissing: (value) -> not _.isEmpty value
-
-
 
 router.post '/', (req, res) ->
-  req.checkBody('urls', 'missing').notMissing()
-
-  # TODO refactor #1 - validation of request
-  req.checkBody('options', 'missing').notMissing()
-  req.checkBody(['options', 'awsAccessKeyId']).notEmpty()
-  req.checkBody(['options', 'awsSecretAccessKey']).notEmpty()
-  req.checkBody(['options', 's3Bucket']).notEmpty()
-  req.checkBody(['options', 's3Region']).notEmpty()
-  req.checkBody(['options', 'cloudfrontHost']).optional().isURL()
-
-  errors = req.validationErrors()
+  errors = validation.validate req.body, 'store'
 
   if errors
     res.status(422).json

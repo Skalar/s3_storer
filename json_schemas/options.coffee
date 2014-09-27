@@ -12,4 +12,4 @@ module.exports =
       type: 'string'
     cloudfrontHost:
       type: 'string'
-      format: 'url'
+      format: 'uri'

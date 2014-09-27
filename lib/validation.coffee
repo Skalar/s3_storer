@@ -5,6 +5,7 @@ _ = require 'lodash'
 tv4.addFormat formats
 
 tv4.addSchema 'options',  require '../json_schemas/options'
+tv4.addSchema 'store',    require '../json_schemas/store'
 tv4.addSchema 'delete',   require '../json_schemas/delete'
 
 
