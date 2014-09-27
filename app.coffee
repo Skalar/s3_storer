@@ -24,7 +24,10 @@ app.use '/store', require('./routes/store')
 app.use '/delete', require('./routes/delete')
 
 app.use (err, req, res, next) ->
-  req.logger.error err.stack if req.logger
+  if req.logger
+    req.logger.error err.stack
+  else
+    console.log err.stack
 
   res.status(500).end JSON.stringify
     status: 'error'
