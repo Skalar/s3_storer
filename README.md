@@ -142,10 +142,10 @@ access to your API.
 
 ```json
 {
-  "urls": {
+  "urls": [
     "http://file.in.your.s3.bucket.com/object1",
     "http://file.in.your.s3.bucket.com/object2"
-  },
+  ],
   "options": {
     "awsAccessKeyId": "xxx",
     "awsSecretAccessKey": "xxx",
