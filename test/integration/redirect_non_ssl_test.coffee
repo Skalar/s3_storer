@@ -37,14 +37,16 @@ describe "GET /", ->
       beforeEach ->
         process.env.REQUIRE_SSL = 'true'
 
-      it "returns 302 for HTTP", (done) ->
+      it "returns 426 for HTTP", (done) ->
         request(app)
           .get('/')
           .set('X-Forwarded-Proto', 'http')
-          .end (err, res) ->
-            expect(res.statusCode).to.eq 301
-            expect(res.header['location']).to.eq 'https://127.0.0.1/'
-            done()
+          .expect(
+            426,
+            "WARNING! Your S3 credentials has been compromised as you sent them over http.",
+            done
+          )
+
 
       it "returns 200 OK for HTTPs", (done) ->
         request(app)
