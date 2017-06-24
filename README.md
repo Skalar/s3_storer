@@ -190,7 +190,7 @@ nodemon --exec coffee bin/www
 
 
 ### Tests
-Tests are written using [Mocha](http://visionmedia.github.io/mocha/) and
+Tests are written using [Mocha](http://mochajs.org/) and
 [Chai expect](http://chaijs.com/guide/styles/#expect) syntax style.
 We use [Sinon](http://sinonjs.org/) for test utilities
 and [SuperTest](https://github.com/visionmedia/supertest) for integration tests.
