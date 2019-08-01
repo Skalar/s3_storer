@@ -7,6 +7,6 @@ module.exports =
       patternProperties:
         '^.+$':
           type: 'string'
-          format: 'uri'
+          format: 'url'
     options:
       $ref: 'options'

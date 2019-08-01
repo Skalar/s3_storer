@@ -108,7 +108,6 @@ class S3Client
 
 
   batchForDeletion: (array) ->
-    groups = _.groupBy array, (value, index) => Math.floor index / @batchSizeDeleteUrl
-    _.values groups
+    return _.chunk array, @batchSizeDeleteUrl
 
 module.exports = S3Client

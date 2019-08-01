@@ -103,6 +103,7 @@ class UrlsS3Storer
         @log "FAILED - clean complete. Duration: #{duration} ms."
         done out
       .catch (err) =>
+        duration = @timers.stop 'complete-process'
         @log "FAILED - clean failed too :( Duration: #{duration} ms."
         done err
 

@@ -7,6 +7,6 @@ module.exports =
       minItems: 1
       items:
         type: 'string'
-        format: 'uri'
+        format: 'url'
     options:
       $ref: 'options'
