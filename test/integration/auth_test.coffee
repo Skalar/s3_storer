@@ -28,28 +28,28 @@ describe "GET /", ->
     else
       delete process.env.BASIC_AUTH_PASSWORD
 
-  it "it returns 200 OK if basic auth is disabled", (done) ->
+  it "it returns 200 OK if basic auth is disabled", () ->
     delete process.env.BASIC_AUTH_USER
     delete process.env.BASIC_AUTH_PASSWORD
 
     request(app)
       .get('/')
-      .expect(200, done)
+      .expect(200)
 
 
-  it "it returns 401 Unauthorized user/pass is not given", (done) ->
+  it "it returns 401 Unauthorized user/pass is not given", () ->
     request(app)
       .get('/')
-      .expect(401, done)
+      .expect(401)
 
-  it "it returns 401 Unauthorized when user/pass is incorrect", (done) ->
+  it "it returns 401 Unauthorized when user/pass is incorrect", () ->
     request(app)
       .get('/')
-      .set('Authorization', "basic #{new Buffer('hack:you!').toString('base64')}")
-      .expect(401, done)
+      .set('Authorization', "basic #{new Buffer.from('hack:you!').toString('base64')}")
+      .expect(401)
 
-  it "it returns 200 ok when user/pass is correct", (done) ->
+  it "it returns 200 ok when user/pass is correct", () ->
     request(app)
       .get('/')
-      .set('Authorization', "basic #{new Buffer('top:secret').toString('base64')}")
-      .expect(200, done)
+      .set('Authorization', "basic #{new Buffer.from('top:secret').toString('base64')}")
+      .expect(200)

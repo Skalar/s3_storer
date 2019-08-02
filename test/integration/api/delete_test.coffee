@@ -6,17 +6,17 @@ nock = require 'nock'
 app = require '../../../app'
 S3Client = require '../../../lib/s3_client'
 _ = require 'lodash'
-http = require 'http'
+https = require 'https'
 
 s3Client = new S3Client awsOptions()
 
 validDeleteRequestJson = null
 
 
-testFileS3URL = "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com/6bb610a613f6ea25e695f7df7d13640be642553c"
+testFileS3URL = "https://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com/93daf232ad1a85e88be7aa622c83de9e261254ad"
 validStoreRequestJson =
   urls:
-    thumb: 'https://www.filepicker.io/api/file/JhJKMtnRDW9uLYcnkRKW/convert?crop=41,84,220,220'
+    thumb: 'https://raw.githubusercontent.com/Skalar/s3_storer/master/test/assets/photo.jpg'
   options: awsOptions()
 
 storeTestFileToS3 = (callback) ->
@@ -24,9 +24,10 @@ storeTestFileToS3 = (callback) ->
     .post('/store')
     .send(validStoreRequestJson)
     .expect(200, callback)
+  return null
 
 checkStatusOfTestFile = (expectedStatus, callback) ->
-  http.get testFileS3URL, (res) ->
+  https.get testFileS3URL, (res) ->
     expect(res.statusCode).to.eq expectedStatus
     callback()
 
@@ -64,14 +65,14 @@ describe "DELETE /delete", ->
             .delete('/delete')
             .send(validDeleteRequestJson)
             .expect(200)
-            .end (err, res) ->
+            .then (res) ->
               response = JSON.parse res.text
               expect(response.status).to.eq 'ok'
 
               checkStatusOfTestFile 403, done
 
   describe "invalid requests", ->
-    it "responds with 422 when urls are not present", (done) ->
+    it "responds with 422 when urls are not present", () ->
       json = validDeleteRequestJson
       delete json.urls
 
@@ -79,12 +80,11 @@ describe "DELETE /delete", ->
         .delete('/delete')
         .send(json)
         .expect(422)
-        .end (err, res) ->
+        .then (res) ->
           expect(res.body.errors['/']).to.contain 'Missing required property: urls'
-          done()
 
 
-    it "responds with 422 when urls are an empty array", (done) ->
+    it "responds with 422 when urls are an empty array", () ->
       json = validDeleteRequestJson
       json.urls = []
 
@@ -92,11 +92,10 @@ describe "DELETE /delete", ->
         .delete('/delete')
         .send(json)
         .expect(422)
-        .end (err, res) ->
+        .then (res) ->
           expect(res.body.errors['/urls']).to.contain 'Array is too short (0), minimum 1'
-          done()
 
-    it "responds with 422 when urls contains invalid urls", (done) ->
+    it "responds with 422 when urls contains invalid urls", () ->
       json = validDeleteRequestJson
       json.urls = ['http://www.example.com', 'foo', '']
 
@@ -104,13 +103,12 @@ describe "DELETE /delete", ->
         .delete('/delete')
         .send(json)
         .expect(422)
-        .end (err, res) ->
-          expect(res.body.errors['/urls/1']).to.contain 'Format validation failed (URI expected)'
-          expect(res.body.errors['/urls/2']).to.contain 'Format validation failed (URI expected)'
-          done()
+        .then (res) ->
+          expect(res.body.errors['/urls/1']).to.contain 'Format validation failed (URL expected)'
+          expect(res.body.errors['/urls/2']).to.contain 'Format validation failed (URL expected)'
 
 
-    it "responds with 422 when aws region is missing", (done) ->
+    it "responds with 422 when aws region is missing", () ->
       json = validDeleteRequestJson
       delete json.options.s3Region
 
@@ -118,6 +116,5 @@ describe "DELETE /delete", ->
         .delete('/delete')
         .send(json)
         .expect(422)
-        .end (err, res) ->
+        .then (res) ->
           expect(res.body.errors['/options']).to.contain 'Missing required property: s3Region'
-          done()

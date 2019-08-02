@@ -18,7 +18,7 @@ module.exports =
 
   nockS3Api: (url, options, status = 200) ->
     path = sha1 url
-    s3Endpoint = "https://#{options.s3Bucket}.s3-#{options.s3Region}.amazonaws.com"
+    s3Endpoint = "https://#{options.s3Bucket}.s3.#{options.s3Region}.amazonaws.com"
 
     nock(s3Endpoint)
       .put("/#{path}")

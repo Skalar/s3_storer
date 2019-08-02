@@ -195,8 +195,9 @@ Tests are written using [Mocha](http://mochajs.org/) and
 We use [Sinon](http://sinonjs.org/) for test utilities
 and [SuperTest](https://github.com/visionmedia/supertest) for integration tests.
 
-Run `grunt test` when you want to run tests.
-You can also run `mocha path/to/test` if you want to run specific tests.
+Run `npm test` when you want to run all tests. Run `npm run test-unit` to only run the unit tests,
+and `npm run test-integration` to only run the integration tests.
+You can also run `mocha path/to/test` if you want to run a specific test.
 
 In our tests some ENV variables are important. They all start with `TEST_*`
 and you find examples in `.envrc.example`. You need to create and configure your own bucket

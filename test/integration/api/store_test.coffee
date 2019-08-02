@@ -1,6 +1,7 @@
 require('../../spec_helper')()
 
 nock = require 'nock'
+getPort = require('get-port')
 awsOptions = require '../../helpers/aws_options'
 verifyDataEqual = require '../../helpers/verify_data_equal'
 app = require '../../../app'
@@ -19,8 +20,8 @@ describe "POST /store", ->
   beforeEach ->
     validRequestJson =
       urls:
-        thumb: 'https://www.filepicker.io/api/file/JhJKMtnRDW9uLYcnkRKW/convert?crop=41,84,220,220'
-        monitor: 'https://www.filepicker.io/api/file/JhJKMtnRDW9uLYcnkRKW/convert?crop=0,0,400,400'
+        thumb: 'https://raw.githubusercontent.com/Skalar/s3_storer/master/test/assets/photo-thumb.jpg'
+        monitor: 'https://raw.githubusercontent.com/Skalar/s3_storer/master/test/assets/photo.jpg'
       options: awsOptions()
 
     nock.enableNetConnect()
@@ -30,33 +31,31 @@ describe "POST /store", ->
     afterEach ->
       s3Client.deleteUrls(
         [
-          "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com//6bb610a613f6ea25e695f7df7d13640be642553c"
-          "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com//b981b9d5369fc4dd5f71063fb8c0a378c65afd13"
+          "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com/963d49d5940f69183e56f9bcf4a344f500638d8e"
+          "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com/93daf232ad1a85e88be7aa622c83de9e261254ad"
         ]
         awsOptions().s3Bucket
       ).catch (err) -> console.log "FAILED to clean after integration tests! Error: #{err}"
 
-    it "responds with 200 OK and a URL s3 for given files", (done) ->
+    it "responds with 200 OK and a URL s3 for given files", () ->
       request(app).
         post('/store').
         send(validRequestJson).
         expect(200).
-        end (err, res) ->
+        then (res) ->
           response = JSON.parse res.text
 
           expect(response.status).to.eq 'ok'
           expect(response.urls).to.deep.eq
-            thumb: "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com/6bb610a613f6ea25e695f7df7d13640be642553c"
-            monitor: "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com/b981b9d5369fc4dd5f71063fb8c0a378c65afd13"
+            thumb: "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com/963d49d5940f69183e56f9bcf4a344f500638d8e"
+            monitor: "http://#{awsOptions().s3Bucket}.s3-#{awsOptions().s3Region}.amazonaws.com/93daf232ad1a85e88be7aa622c83de9e261254ad"
 
-          done()
-
-    it "returns URLs where the stored data is what we expect it to be", (done) ->
+    it "returns URLs where the stored data is what we expect it to be", () ->
       request(app).
         post('/store').
         send(validRequestJson).
         expect(200).
-        end (err, res) ->
+        then (res) ->
           response = JSON.parse res.text
 
           expect(verifyDataEqual(
@@ -68,35 +67,33 @@ describe "POST /store", ->
               response.urls.monitor
             )).to.eventually.eq(true).notify done
 
-    it "responds with 200 OK and a URL cloud front host when given", (done) ->
+    it "responds with 200 OK and a URL cloud front host when given", () ->
       validRequestJson.options.cloudfrontHost = 'xxx.cloudfront.net'
 
       request(app).
         post('/store').
         send(validRequestJson).
         expect(200).
-        end (err, res) ->
+        then (res) ->
           response = JSON.parse res.text
 
           expect(response.status).to.eq 'ok'
           expect(response.urls).to.deep.eq
-            thumb: 'http://xxx.cloudfront.net/6bb610a613f6ea25e695f7df7d13640be642553c'
-            monitor: 'http://xxx.cloudfront.net/b981b9d5369fc4dd5f71063fb8c0a378c65afd13'
-
-          done()
+            thumb: 'http://xxx.cloudfront.net/963d49d5940f69183e56f9bcf4a344f500638d8e'
+            monitor: 'http://xxx.cloudfront.net/93daf232ad1a85e88be7aa622c83de9e261254ad'
 
 
 
 
   describe "invalid requests", ->
-    it "responds with useful error when AWS credentials are wrong", (done) ->
+    it "responds with useful error when AWS credentials are wrong", () ->
       validRequestJson.options.awsSecretAccessKey = 'foobar'
 
       request(app).
         post('/store').
         send(validRequestJson).
         expect(200).
-        end (err, res) ->
+        then (res) ->
           response = JSON.parse res.text
 
           expect(response.status).to.eq 'error'
@@ -105,10 +102,8 @@ describe "POST /store", ->
           expect(response.urlsWithError).to.have.deep.property 'monitor.s3.code', 'SignatureDoesNotMatch'
           expect(response.urlsWithError).to.have.deep.property 'monitor.s3.statusCode', 403
 
-          done()
 
-
-    it "responds with 422 when urls are missing", (done) ->
+    it "responds with 422 when urls are missing", () ->
       json = validRequestJson
       delete json.urls
 
@@ -116,11 +111,11 @@ describe "POST /store", ->
         post('/store').
         send(json).
         expect(422).
-        end (err, res) ->
+        then (res) ->
           expect(res.body.errors['/']).to.contain 'Missing required property: urls'
-          done()
 
-    it "responds with 422 when urls are invalid", (done) ->
+
+    it "responds with 422 when urls are invalid", () ->
       json = validRequestJson
       json.urls =
         foo: 'bar'
@@ -129,32 +124,31 @@ describe "POST /store", ->
         post('/store').
         send(json).
         expect(422).
-        end (err, res) ->
-          expect(res.body.errors['/urls/foo']).to.contain 'Format validation failed (URI expected)'
-          done()
+        then (res) ->
+          expect(res.body.errors['/urls/foo']).to.contain 'Format validation failed (URL expected)'
 
 
-    it "status error on connection refused", (done) ->
-      json = validRequestJson
-      json.urls.thumb = 'http://www.ergmerigjoerjgeijwefwef.com/'
+    it "status error on connection refused", () ->
+      getPort().
+      then (port) ->
+        json = validRequestJson
+        json.urls.thumb = "http://localhost:#{port}/"
 
-      request(app).
-        post('/store').
-        send(json).
-        expect(200).
-        end (err, res) ->
-          response = JSON.parse res.text
+        request(app).
+          post('/store').
+          send(json).
+          expect(200).
+          then (res) ->
+            response = JSON.parse res.text
 
-          expect(response.status).to.eq 'error'
-          expect(response.urlsWithError).to.have.deep
-            .property 'thumb.downloadResponse.status', 'ENOTFOUND'
-          expect(response.urlsWithError).to.have.deep
-            .property 'thumb.downloadResponse.body', 'Error: getaddrinfo ENOTFOUND'
-
-          done()
+            expect(response.status).to.eq 'error'
+            expect(response.urlsWithError).to.have.deep
+              .property 'thumb.downloadResponse.status', 'ECONNREFUSED'
+            expect(response.urlsWithError).to.have.deep
+              .property 'thumb.downloadResponse.body', "Error: connect ECONNREFUSED 127.0.0.1:#{port}"
 
 
-    it "responds with 422 when options are missing", (done) ->
+    it "responds with 422 when options are missing", () ->
       json = validRequestJson
       delete json.options
 
@@ -162,12 +156,11 @@ describe "POST /store", ->
         post('/store').
         send(json).
         expect(422).
-        end (err, res) ->
+        then (res) ->
           expect(res.body.errors['/']).to.contain 'Missing required property: options'
-          done()
 
 
-    it "responds with 422 when awsAccessKeyId", (done) ->
+    it "responds with 422 when awsAccessKeyId", () ->
       json = validRequestJson
       delete json.options.awsAccessKeyId
 
@@ -175,13 +168,11 @@ describe "POST /store", ->
         post('/store').
         send(json).
         expect(422).
-        end (err, res) ->
+        then (res) ->
           expect(res.body.errors['/options']).to.contain 'Missing required property: awsAccessKeyId'
-          done()
 
 
-
-    it "responds with 422 when cloudfrontHost is invalid", (done) ->
+    it "responds with 422 when cloudfrontHost is invalid", () ->
       json = validRequestJson
       json.options.cloudfrontHost = "dummy"
 
@@ -189,12 +180,11 @@ describe "POST /store", ->
         post('/store').
         send(json).
         expect(422).
-        end (err, res) ->
-          expect(res.body.errors['/options/cloudfrontHost']).to.contain 'Format validation failed (URI expected)'
-          done()
+        then (res) ->
+          expect(res.body.errors['/options/cloudfrontHost']).to.contain 'Format validation failed (URL expected)'
 
 
-    it "responds with 422 when aws region is missing", (done) ->
+    it "responds with 422 when aws region is missing", () ->
       json = validRequestJson
       delete json.options.s3Region
 
@@ -202,6 +192,5 @@ describe "POST /store", ->
         post('/store').
         send(json).
         expect(422).
-        end (err, res) ->
+        then (res) ->
           expect(res.body.errors['/options']).to.contain 'Missing required property: s3Region'
-          done()
