@@ -13,3 +13,5 @@ module.exports =
     cloudfrontHost:
       type: 'string'
       format: 'url'
+    makePublic:
+      type: 'boolean'

@@ -55,9 +55,11 @@ class UrlS3Storer
       Bucket: @options.s3Bucket
       Key: @bucketKey()
       Body: streamToUpload
-      ACL: 'public-read'
       ContentLength: streamToUpload.headers['content-length']
       ContentType: streamToUpload.headers['content-type']
+
+    if !@options.hasOwnProperty('makePublic') || @options.makePublic
+      params.ACL = 'public-read'
 
     @timers.start 'upload'
 
