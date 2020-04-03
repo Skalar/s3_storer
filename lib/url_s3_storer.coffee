@@ -5,6 +5,7 @@ http = require 'http'
 https = require 'https'
 RSVP = require 'rsvp'
 Timers = require './timers'
+magic = require('stream-mmmagic');
 
 class UrlS3Storer
   constructor: (@ident, @url, @options) ->
@@ -50,26 +51,31 @@ class UrlS3Storer
 
 
 
-  uploadToS3: (streamToUpload, resolve, reject) ->
-    params =
-      Bucket: @options.s3Bucket
-      Key: @bucketKey()
-      Body: streamToUpload
-      ContentLength: streamToUpload.headers['content-length']
-      ContentType: streamToUpload.headers['content-type']
+  uploadToS3: (streamInput, resolve, reject) ->
 
-    if !@options.hasOwnProperty('makePublic') || @options.makePublic
-      params.ACL = 'public-read'
+    magic streamInput, (err, fileDetails, streamToUpload) =>
+      if err
+        reject err
 
-    @timers.start 'upload'
+      params =
+        Bucket: @options.s3Bucket
+        Key: @bucketKey()
+        Body: streamToUpload
+        ContentLength: streamInput.headers['content-length']
+        ContentType: fileDetails.type
 
-    @s3Client().putObject(params)
-      .then (data) =>
-        @log "---> UPLOADED #{@ident} to #{@options.s3Bucket}/#{@bucketKey()} (#{@timers.stop 'upload'} ms)"
-        resolve @uploadedUrl()
-      .catch (err) =>
-        @log "---> FAILED UPLOADING #{@ident} to #{@options.s3Bucket}/#{@bucketKey()} due to #{err} (#{@timers.stop 'upload'} ms)"
-        reject s3: err
+      if !@options.hasOwnProperty('makePublic') || @options.makePublic
+        params.ACL = 'public-read'
+
+      @timers.start 'upload'
+
+      @s3Client().putObject(params)
+        .then (data) =>
+          @log "---> UPLOADED #{@ident} to #{@options.s3Bucket}/#{@bucketKey()} (#{@timers.stop 'upload'} ms)"
+          resolve @uploadedUrl()
+        .catch (err) =>
+          @log "---> FAILED UPLOADING #{@ident} to #{@options.s3Bucket}/#{@bucketKey()} due to #{err} (#{@timers.stop 'upload'} ms)"
+          reject s3: err
 
 
   bufferResponseAndFail: (failedStream, resolve, reject) ->
