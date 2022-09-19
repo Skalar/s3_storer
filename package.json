@@ -1,6 +1,6 @@
 {
   "name": "s3_storer",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A Node application which stores a set of given keys and URLs on S3 and returns the set of keys with new URLs",
   "main": "app.coffee",
   "scripts": {
