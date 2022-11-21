@@ -64,7 +64,7 @@ class UrlS3Storer
         ContentLength: streamInput.headers['content-length']
         ContentType: fileDetails.type
 
-      if !@options.hasOwnProperty('makePublic') || @options.makePublic
+      if !@options.hasOwnProperty('makePublic') || @options.makePublic == null || @options.makePublic
         params.ACL = 'public-read'
 
       @timers.start 'upload'

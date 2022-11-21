@@ -14,4 +14,4 @@ module.exports =
       type: 'string'
       format: 'url'
     makePublic:
-      type: 'boolean'
+      type: ['boolean', 'null']
